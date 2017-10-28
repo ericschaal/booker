@@ -1,6 +1,5 @@
 package common;
 
-import java.rmi.RemoteException;
 import java.util.Vector;
 
 public interface ResourceManager extends RemoteResourceManager {
