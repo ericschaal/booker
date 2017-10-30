@@ -1,24 +1,26 @@
-package middleware;
+package client;
 
 import common.Logger;
-import common.ResourceManager;
+import common.RemoteResourceManager;
+import middleware.MiddlewareResourceManager;
 import middleware.transaction.TransactionResult;
 import middleware.transaction.TransactionStatus;
-import middleware.transaction.TxManager;
 
+
+import java.rmi.RemoteException;
 import java.util.Vector;
 
-public class TransactionalResourceManager implements ResourceManager {
+public class TransactionalResourceManager implements RemoteResourceManager {
+    
+    private final MiddlewareResourceManager rm;
 
-    private TxManager globalTxManager;
-
-    public TransactionalResourceManager(TxManager globalTxManager) {
-        this.globalTxManager = globalTxManager;
+    public TransactionalResourceManager(MiddlewareResourceManager rm) {
+        this.rm = rm;
     }
 
     @Override
-    public boolean addFlight(int id, int flightNum, int flightSeats, int flightPrice) {
-        TransactionResult transactionResult = globalTxManager.runInTransaction(
+    public boolean addFlight(int id, int flightNum, int flightSeats, int flightPrice) throws RemoteException {
+        TransactionResult transactionResult = rm.runInTransaction(
                 (resourceManager, txId, result, abort) -> result.setResult(resourceManager.addFlight(txId, flightNum, flightSeats, flightPrice))
         );
 
@@ -31,8 +33,8 @@ public class TransactionalResourceManager implements ResourceManager {
     }
 
     @Override
-    public boolean addCars(int id, String location, int numCars, int price) {
-        TransactionResult transactionResult = globalTxManager.runInTransaction(
+    public boolean addCars(int id, String location, int numCars, int price) throws RemoteException {
+        TransactionResult transactionResult = rm.runInTransaction(
                 (resourceManager, txId, result, abort) -> result.setResult(resourceManager.addCars(txId, location, numCars, price))
         );
 
@@ -45,8 +47,8 @@ public class TransactionalResourceManager implements ResourceManager {
     }
 
     @Override
-    public boolean addRooms(int id, String location, int numRooms, int price) {
-        TransactionResult transactionResult = globalTxManager.runInTransaction(
+    public boolean addRooms(int id, String location, int numRooms, int price) throws RemoteException {
+        TransactionResult transactionResult = rm.runInTransaction(
                 (resourceManager, txId, result, abort) -> result.setResult(resourceManager.addRooms(txId, location, numRooms, price))
         );
 
@@ -59,8 +61,8 @@ public class TransactionalResourceManager implements ResourceManager {
     }
 
     @Override
-    public int newCustomer(int id) {
-        TransactionResult transactionResult = globalTxManager.runInTransaction(
+    public int newCustomer(int id) throws RemoteException {
+        TransactionResult transactionResult = rm.runInTransaction(
                 (resourceManager, txId, result, abort) -> result.setResult(resourceManager.newCustomer(txId))
         );
         if (transactionResult.getStatus() == TransactionStatus.OK) {
@@ -72,14 +74,14 @@ public class TransactionalResourceManager implements ResourceManager {
     }
 
     @Override
-    public boolean newCustomer(int id, int cid) {
+    public boolean newCustomer(int id, int cid) throws RemoteException {
         Logger.print().error("Unimplemented", "TransactionalResourceManager");
         return false;
     }
 
     @Override
-    public boolean deleteFlight(int id, int flightNum) {
-        TransactionResult transactionResult = globalTxManager.runInTransaction(
+    public boolean deleteFlight(int id, int flightNum) throws RemoteException {
+        TransactionResult transactionResult = rm.runInTransaction(
                 (resourceManager, txId, result, abort) -> result.setResult(resourceManager.deleteFlight(txId, flightNum))
         );
         if (transactionResult.getStatus() == TransactionStatus.OK) {
@@ -91,8 +93,8 @@ public class TransactionalResourceManager implements ResourceManager {
     }
 
     @Override
-    public boolean deleteCars(int id, String location) {
-        TransactionResult transactionResult = globalTxManager.runInTransaction(
+    public boolean deleteCars(int id, String location) throws RemoteException {
+        TransactionResult transactionResult = rm.runInTransaction(
                 (resourceManager, txId, result, abort) -> result.setResult(resourceManager.deleteCars(txId, location))
         );
         if (transactionResult.getStatus() == TransactionStatus.OK) {
@@ -104,8 +106,8 @@ public class TransactionalResourceManager implements ResourceManager {
     }
 
     @Override
-    public boolean deleteRooms(int id, String location) {
-        TransactionResult transactionResult = globalTxManager.runInTransaction(
+    public boolean deleteRooms(int id, String location) throws RemoteException {
+        TransactionResult transactionResult = rm.runInTransaction(
                 (resourceManager, txId, result, abort) -> result.setResult(resourceManager.deleteRooms(txId, location))
         );
         if (transactionResult.getStatus() == TransactionStatus.OK) {
@@ -117,8 +119,8 @@ public class TransactionalResourceManager implements ResourceManager {
     }
 
     @Override
-    public boolean deleteCustomer(int id, int customer) {
-        TransactionResult transactionResult = globalTxManager.runInTransaction(
+    public boolean deleteCustomer(int id, int customer) throws RemoteException {
+        TransactionResult transactionResult = rm.runInTransaction(
                 (resourceManager, txId, result, abort) -> {
                     //TODO fetch reservations and delete them.
                     return result.setResult(resourceManager.deleteCustomer(txId, customer));
@@ -133,8 +135,8 @@ public class TransactionalResourceManager implements ResourceManager {
     }
 
     @Override
-    public int queryFlight(int id, int flightNumber) {
-        TransactionResult transactionResult = globalTxManager.runInTransaction(
+    public int queryFlight(int id, int flightNumber) throws RemoteException {
+        TransactionResult transactionResult = rm.runInTransaction(
                 (resourceManager, txId, result, abort) -> result.setResult(resourceManager.queryFlight(txId, flightNumber))
         );
         if (transactionResult.getStatus() == TransactionStatus.OK) {
@@ -146,8 +148,8 @@ public class TransactionalResourceManager implements ResourceManager {
     }
 
     @Override
-    public int queryCars(int id, String location) {
-        TransactionResult transactionResult = globalTxManager.runInTransaction(
+    public int queryCars(int id, String location) throws RemoteException {
+        TransactionResult transactionResult = rm.runInTransaction(
                 (resourceManager, txId, result, abort) -> result.setResult(resourceManager.queryCars(txId, location))
         );
         if (transactionResult.getStatus() == TransactionStatus.OK) {
@@ -159,8 +161,8 @@ public class TransactionalResourceManager implements ResourceManager {
     }
 
     @Override
-    public int queryRooms(int id, String location) {
-        TransactionResult transactionResult = globalTxManager.runInTransaction(
+    public int queryRooms(int id, String location) throws RemoteException {
+        TransactionResult transactionResult = rm.runInTransaction(
                 (resourceManager, txId, result, abort) -> result.setResult(resourceManager.queryRooms(txId, location))
         );
         if (transactionResult.getStatus() == TransactionStatus.OK) {
@@ -172,8 +174,8 @@ public class TransactionalResourceManager implements ResourceManager {
     }
 
     @Override
-    public String queryCustomerInfo(int id, int customer) {
-        TransactionResult transactionResult = globalTxManager.runInTransaction(
+    public String queryCustomerInfo(int id, int customer) throws RemoteException {
+        TransactionResult transactionResult = rm.runInTransaction(
                 (resourceManager, txId, result, abort) -> result.setResult(resourceManager.queryCustomerInfo(txId, customer))
         );
         if (transactionResult.getStatus() == TransactionStatus.OK) {
@@ -185,8 +187,8 @@ public class TransactionalResourceManager implements ResourceManager {
     }
 
     @Override
-    public int queryFlightPrice(int id, int flightNumber) {
-        TransactionResult transactionResult = globalTxManager.runInTransaction(
+    public int queryFlightPrice(int id, int flightNumber) throws RemoteException {
+        TransactionResult transactionResult = rm.runInTransaction(
                 (resourceManager, txId, result, abort) -> result.setResult(resourceManager.queryFlightPrice(txId, flightNumber))
         );
         if (transactionResult.getStatus() == TransactionStatus.OK) {
@@ -198,8 +200,8 @@ public class TransactionalResourceManager implements ResourceManager {
     }
 
     @Override
-    public int queryCarsPrice(int id, String location) {
-        TransactionResult transactionResult = globalTxManager.runInTransaction(
+    public int queryCarsPrice(int id, String location) throws RemoteException {
+        TransactionResult transactionResult = rm.runInTransaction(
                 (resourceManager, txId, result, abort) -> result.setResult(resourceManager.queryCarsPrice(txId, location))
         );
         if (transactionResult.getStatus() == TransactionStatus.OK) {
@@ -211,8 +213,8 @@ public class TransactionalResourceManager implements ResourceManager {
     }
 
     @Override
-    public int queryRoomsPrice(int id, String location) {
-        TransactionResult transactionResult = globalTxManager.runInTransaction(
+    public int queryRoomsPrice(int id, String location) throws RemoteException {
+        TransactionResult transactionResult = rm.runInTransaction(
                 (resourceManager, txId, result, abort) -> result.setResult(resourceManager.queryRoomsPrice(txId, location))
         );
         if (transactionResult.getStatus() == TransactionStatus.OK) {
@@ -224,8 +226,8 @@ public class TransactionalResourceManager implements ResourceManager {
     }
 
     @Override
-    public boolean reserveFlight(int id, int customer, int flightNumber) {
-        TransactionResult transactionResult = globalTxManager.runInTransaction(
+    public boolean reserveFlight(int id, int customer, int flightNumber) throws RemoteException {
+        TransactionResult transactionResult = rm.runInTransaction(
                 (resourceManager, txId, result, abort) -> result.setResult(resourceManager.reserveFlight(txId, customer, flightNumber))
         );
         if (transactionResult.getStatus() == TransactionStatus.OK) {
@@ -237,8 +239,8 @@ public class TransactionalResourceManager implements ResourceManager {
     }
 
     @Override
-    public boolean reserveCar(int id, int customer, String location) {
-        TransactionResult transactionResult = globalTxManager.runInTransaction(
+    public boolean reserveCar(int id, int customer, String location) throws RemoteException {
+        TransactionResult transactionResult = rm.runInTransaction(
                 (resourceManager, txId, result, abort) -> result.setResult(resourceManager.reserveCar(txId, customer, location))
         );
         if (transactionResult.getStatus() == TransactionStatus.OK) {
@@ -250,8 +252,8 @@ public class TransactionalResourceManager implements ResourceManager {
     }
 
     @Override
-    public boolean reserveRoom(int id, int customer, String location) {
-        TransactionResult transactionResult = globalTxManager.runInTransaction(
+    public boolean reserveRoom(int id, int customer, String location) throws RemoteException {
+        TransactionResult transactionResult = rm.runInTransaction(
                 (resourceManager, txId, result, abort) -> result.setResult(resourceManager.reserveRoom(txId, customer, location))
         );
         if (transactionResult.getStatus() == TransactionStatus.OK) {
@@ -263,26 +265,26 @@ public class TransactionalResourceManager implements ResourceManager {
     }
 
     @Override
-    public boolean reserveFlight(int id, int customer, int flightNumber, int count) {
+    public boolean reserveFlight(int id, int customer, int flightNumber, int count) throws RemoteException {
         Logger.print().error("Unimplemented", "TransactionalResourceManager");
         return false;
     }
 
     @Override
-    public boolean reserveCar(int id, int customer, String location, int count) {
+    public boolean reserveCar(int id, int customer, String location, int count) throws RemoteException {
         Logger.print().error("Unimplemented", "TransactionalResourceManager");
         return false;
     }
 
     @Override
-    public boolean reserveRoom(int id, int customer, String location, int count) {
+    public boolean reserveRoom(int id, int customer, String location, int count) throws RemoteException {
         Logger.print().error("Unimplemented", "TransactionalResourceManager");
         return false;
     }
 
     @Override
-    public boolean itinerary(int id, int customer, Vector flightNumbers, String location, boolean Car, boolean Room) {
-        TransactionResult transactionResult = globalTxManager.runInTransaction(
+    public boolean itinerary(int id, int customer, Vector flightNumbers, String location, boolean Car, boolean Room) throws RemoteException {
+        TransactionResult transactionResult = rm.runInTransaction(
                 (resourceManager, txId, result, abort) -> {
                     if (true /*TODO check customer */) {
                         for (String rawFlightNumber : (Vector<String>) flightNumbers) {
