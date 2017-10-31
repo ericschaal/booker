@@ -122,8 +122,14 @@ public class TransactionalResourceManager implements RemoteResourceManager {
     public boolean deleteCustomer(int id, int customer) throws RemoteException {
         TransactionResult transactionResult = rm.runInTransaction(
                 (resourceManager, txId, result, abort) -> {
+
+                    boolean temp = resourceManager.deleteCustomer(txId, customer);
+                    if (!temp)
+                        abort.invoke();
+
                     //TODO fetch reservations and delete them.
-                    return result.setResult(resourceManager.deleteCustomer(txId, customer));
+
+                    return result.setResult(temp);
                 }
         );
         if (transactionResult.getStatus() == TransactionStatus.OK) {

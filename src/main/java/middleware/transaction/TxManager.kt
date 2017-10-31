@@ -1,23 +1,25 @@
 package middleware.transaction
 
 import common.Logger
+import common.RemoteConcurrentResourceManager
 import common.Resource
+import middleware.MiddlewareResourceManager
 import middleware.lockManager.DeadlockException
-import middleware.MiddlewareConcurrentResourceManager
 import java.rmi.RemoteException
 
 class TxManager {
 
-    private var rm: MiddlewareConcurrentResourceManager
+    private var concurrentRM: MiddlewareConcurrentResourceManager
     private var transactionCounter: Int = 0
     private var liveTransaction: HashMap<Int, Transaction> = HashMap()
 
     private var ttl: Long
 
-    constructor(rm: MiddlewareConcurrentResourceManager, ttl: Long) {
-        this.rm = rm
+    constructor(rm: MiddlewareResourceManager, ttl: Long) {
+        this.concurrentRM = MiddlewareConcurrentResourceManager(rm, this)
         this.ttl = ttl
     }
+
 
     private fun abort(txId: Int): Boolean {
         //TODO force transaction to abort
@@ -51,12 +53,14 @@ class TxManager {
         return transaction
     }
 
-    fun runInTransaction(body: TransactionBody<MiddlewareConcurrentResourceManager, Int, TransactionResult, () -> Unit, TransactionResult>): TransactionResult {
+    fun runInTransaction(body: TransactionBody<RemoteConcurrentResourceManager, Int, TransactionResult, () -> Unit, TransactionResult>): TransactionResult {
 
         var transaction = startTransaction()
 
         return try {
-            body.apply(rm, transaction.id, TransactionResult(TransactionStatus.OK), { abort(transaction.id) })
+
+            body.apply(concurrentRM, transaction.id, TransactionResult(TransactionStatus.OK), { transaction.abort(this) })
+
         } catch (e: DeadlockException) {
             Logger.print().error(e.message, "TxManager")
             TransactionResult(TransactionStatus.ABORT)

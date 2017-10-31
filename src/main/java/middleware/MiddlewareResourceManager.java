@@ -1,5 +1,6 @@
 package middleware;
 
+import common.RemoteConcurrentResourceManager;
 import common.TransactionalResourceManager;
 import kotlin.Unit;
 import kotlin.jvm.functions.Function0;
@@ -16,7 +17,6 @@ import middleware.transaction.TxManager;
 public class MiddlewareResourceManager implements TransactionalResourceManager {
 
     private final TxManager globalTxManager;
-    private final MiddlewareConcurrentResourceManager concurrentResourceManager;
 
     private final RemoteResourceManager carRM;
     private final RemoteResourceManager flightRM;
@@ -30,13 +30,11 @@ public class MiddlewareResourceManager implements TransactionalResourceManager {
         this.customerRM = customerRM;
         this.roomRM = roomRM;
 
-        this.concurrentResourceManager = new MiddlewareConcurrentResourceManager(this);
-        this.globalTxManager = new TxManager(this.concurrentResourceManager, 4000);
-
+        this.globalTxManager = new TxManager(this, 4000);
     }
 
     @Override
-    public TransactionResult runInTransaction(TransactionBody<MiddlewareConcurrentResourceManager, Integer, TransactionResult, Function0<Unit>, TransactionResult> body) throws RemoteException {
+    public TransactionResult runInTransaction(TransactionBody<RemoteConcurrentResourceManager, Integer, TransactionResult, Function0<Unit>, TransactionResult> body) throws RemoteException {
         return globalTxManager.runInTransaction(body);
     }
 

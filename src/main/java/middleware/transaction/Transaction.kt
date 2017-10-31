@@ -27,8 +27,14 @@ class Transaction {
 
     fun commit() {
         LockManager.get().UnlockAll(id)
+
         timer.cancel()
         timer.purge()
+    }
+
+    @Throws(TransactionAbortedException::class)
+    fun abort(txManager: TxManager) : Boolean {
+        return true
     }
 
 
