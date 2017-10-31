@@ -1,5 +1,6 @@
 package resourceManager;
 
+import common.Logger;
 import common.RemoteResourceManager;
 
 import java.rmi.RemoteException;
@@ -47,12 +48,19 @@ public class RevertibleResourceManager implements RemoteResourceManager {
 
     @Override
     public boolean newCustomer(int id, int cid) throws RemoteException {
+        Logger.print().error("Unimplemented", "RevertibleResourceManager");
         return false;
     }
 
     @Override
     public boolean deleteFlight(int id, int flightNum) throws RemoteException {
-        return false;
+        int count = rm.queryFlight(id, flightNum);
+        int price = rm.queryFlightPrice(id, flightNum);
+        //TODO check if item exists
+
+        history.addtoHistory(id, () -> addFlight(1, flightNum, count, price));
+
+        return rm.deleteFlight(1, flightNum);
     }
 
     @Override
@@ -72,37 +80,37 @@ public class RevertibleResourceManager implements RemoteResourceManager {
 
     @Override
     public int queryFlight(int id, int flightNumber) throws RemoteException {
-        return 0;
+        return rm.queryFlight(id, flightNumber);
     }
 
     @Override
     public int queryCars(int id, String location) throws RemoteException {
-        return 0;
+        return rm.queryCars(id, location);
     }
 
     @Override
     public int queryRooms(int id, String location) throws RemoteException {
-        return 0;
+        return rm.queryRooms(id, location);
     }
 
     @Override
     public String queryCustomerInfo(int id, int customer) throws RemoteException {
-        return null;
+        return rm.queryCustomerInfo(id, customer);
     }
 
     @Override
     public int queryFlightPrice(int id, int flightNumber) throws RemoteException {
-        return 0;
+        return rm.queryFlightPrice(id, flightNumber);
     }
 
     @Override
     public int queryCarsPrice(int id, String location) throws RemoteException {
-        return 0;
+        return rm.queryCarsPrice(id, location);
     }
 
     @Override
     public int queryRoomsPrice(int id, String location) throws RemoteException {
-        return 0;
+        return rm.queryRoomsPrice(id, location);
     }
 
     @Override
