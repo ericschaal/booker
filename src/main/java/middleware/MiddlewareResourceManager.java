@@ -1,15 +1,12 @@
 package middleware;
 
-import common.RemoteConcurrentResourceManager;
-import common.TransactionalResourceManager;
+import common.*;
 import kotlin.Unit;
 import kotlin.jvm.functions.Function0;
 
 import java.rmi.RemoteException;
 import java.util.Vector;
 
-import common.Logger;
-import common.RemoteResourceManager;
 import middleware.transaction.TransactionBody;
 import middleware.transaction.TransactionResult;
 import middleware.transaction.TxManager;
@@ -19,13 +16,13 @@ public class MiddlewareResourceManager implements TransactionalResourceManager {
 
     private final TxManager globalTxManager;
 
-    private final RevertibleResourceManager carRM;
-    private final RevertibleResourceManager flightRM;
-    private final RevertibleResourceManager customerRM;
-    private final RevertibleResourceManager roomRM;
+    private final RemoteRevertibleResourceManager carRM;
+    private final RemoteRevertibleResourceManager flightRM;
+    private final RemoteRevertibleResourceManager customerRM;
+    private final RemoteRevertibleResourceManager roomRM;
 
 
-    public MiddlewareResourceManager(RevertibleResourceManager carRM, RevertibleResourceManager flightRM, RevertibleResourceManager customerRM, RevertibleResourceManager roomRM) {
+    public MiddlewareResourceManager(RemoteRevertibleResourceManager carRM, RemoteRevertibleResourceManager flightRM, RemoteRevertibleResourceManager customerRM, RemoteRevertibleResourceManager roomRM) {
         this.carRM = carRM;
         this.flightRM = flightRM;
         this.customerRM = customerRM;
@@ -159,19 +156,19 @@ public class MiddlewareResourceManager implements TransactionalResourceManager {
         return false;
     }
 
-    public RevertibleResourceManager getCarRM() {
+    public RemoteRevertibleResourceManager getCarRM() {
         return carRM;
     }
 
-    public RevertibleResourceManager getFlightRM() {
+    public RemoteRevertibleResourceManager getFlightRM() {
         return flightRM;
     }
 
-    public RevertibleResourceManager getCustomerRM() {
+    public RemoteRevertibleResourceManager getCustomerRM() {
         return customerRM;
     }
 
-    public RevertibleResourceManager getRoomRM() {
+    public RemoteRevertibleResourceManager getRoomRM() {
         return roomRM;
     }
 }

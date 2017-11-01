@@ -1,6 +1,7 @@
 package middleware.transaction
 
 import common.Logger
+import common.RemoteRevertibleResourceManager
 import common.Resource
 import middleware.lockManager.LockManager
 import resourceManager.RevertibleResourceManager
@@ -11,7 +12,7 @@ import kotlin.concurrent.timerTask
 class Transaction {
 
     var id : Int
-    private var involved: Array<RevertibleResourceManager?> = Array(4, { null })
+    private var involved: Array<RemoteRevertibleResourceManager?> = Array(4, { null })
     private var timer: Timer
 
 
@@ -25,7 +26,7 @@ class Transaction {
         Logger.print().info("Alive", "Transaction:" + id)
     }
 
-    fun setInvolved(resource: Resource, revertibleResourceManager: RevertibleResourceManager) {
+    fun setInvolved(resource: Resource, revertibleResourceManager: RemoteRevertibleResourceManager) {
         if (involved[resource.ordinal] == null) {
             revertibleResourceManager.startTransaction(id)
             involved[resource.ordinal] = revertibleResourceManager

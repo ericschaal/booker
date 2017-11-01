@@ -15,7 +15,7 @@ public class ResourceManager implements RemoteResourceManager {
     
     private final TransactionalResourceManager rm;
 
-    public ResourceManager(MiddlewareResourceManager rm) {
+    public ResourceManager(TransactionalResourceManager rm) {
         this.rm = rm;
     }
 

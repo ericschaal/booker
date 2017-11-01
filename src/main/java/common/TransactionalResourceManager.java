@@ -8,7 +8,7 @@ import middleware.transaction.TransactionResult;
 import java.io.Serializable;
 import java.rmi.RemoteException;
 
-public interface TransactionalResourceManager extends RemoteResourceManager, Serializable {
+public interface TransactionalResourceManager extends RemoteResourceManager {
 
     TransactionResult runInTransaction(TransactionBody<RemoteConcurrentResourceManager, Integer, TransactionResult, Function0<Unit>, TransactionResult> body) throws RemoteException;
 }

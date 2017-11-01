@@ -1,0 +1,3 @@
+grant codebase "file:/Users/eschaal/Desktop/booker/build/libs/booker-1.0-SNAPSHOT.jar" {
+     	permission java.security.AllPermission;
+};

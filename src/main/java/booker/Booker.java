@@ -6,16 +6,16 @@ import common.NetworkAddress;
 import common.Resource;
 import middleware.Middleware;
 import resourceManager.EndpointRM;
-import resourceManager.RevertibleResourceManager;
 
-import java.net.InetSocketAddress;
 import java.rmi.AlreadyBoundException;
 import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
-import java.util.InputMismatchException;
 import java.util.Scanner;
 
 public class Booker {
+
+
+    public static boolean noNetworkAddressArg = false;
 
     public static void printMenu() {
         System.out.println("---- BOOKER ----");
@@ -60,11 +60,13 @@ public class Booker {
             ip = scanner.nextLine();
             if (ip.isEmpty())
                 ip = "127.0.0.1";
-        } catch (Exception e) {}
+        } catch (Exception e) {
+        }
         System.out.print("Registry port[1099]: ");
         try {
             port = Integer.parseInt(scanner.nextLine());
-        } catch (Exception e) {}
+        } catch (Exception e) {
+        }
         return new NetworkAddress(ip, port);
     }
 
@@ -91,6 +93,21 @@ public class Booker {
 
     }
 
+    public static NetworkAddress parseNetworkAddress(String arg) {
+        String[] split = arg.split(":");
+        if (split.length != 2) {
+            noNetworkAddressArg = true;
+            return new NetworkAddress("127.0.0.1", 1099);
+        }
+        String host = split[0];
+        try {
+            int port = Integer.parseInt(split[1]);
+            return new NetworkAddress(host, port);
+        } catch (NumberFormatException e) {
+            throw new IllegalArgumentException("Illegal input");
+        }
+    }
+
 
     public static void main(String[] args) {
         Scanner scanner = new Scanner(System.in);
@@ -99,30 +116,61 @@ public class Booker {
 
         try {
 
-            while (!ready) {
+            if (args.length == 0) {
+                while (!ready) {
 
-                printMenu();
+                    printMenu();
 
-                int choice = scanner.nextInt();
-                switch (choice) {
-                    case 1:
-                        startClient(configure());
-                        ready = true;
+                    int choice = scanner.nextInt();
+                    switch (choice) {
+                        case 1:
+                            startClient(configure());
+                            ready = true;
+                            break;
+                        case 2:
+                            startMiddleware(configure());
+                            ready = true;
+                            break;
+                        case 3:
+                            Resource res = configureResource();
+                            if (res != null)
+                                startRM(configure(), res);
+                            ready = true;
+                            break;
+                        case 4:
+                            System.exit(1);
+                        default:
+                            break;
+                    }
+                }
+            } else {
+
+                NetworkAddress registryAddress = parseNetworkAddress(args[0]);
+                switch (args[1]) {
+                    case "c":
+                        startClient(registryAddress);
                         break;
-                    case 2:
-                        startMiddleware(configure());
-                        ready = true;
+                    case "m":
+                        startMiddleware(registryAddress);
                         break;
-                    case 3:
-                        Resource res = configureResource();
-                        if (res != null)
-                            startRM(configure(), res);
-                        ready = true;
-                        break;
-                    case 4:
-                        System.exit(1);
-                    default:
-                        break;
+                    case "r":
+                        if (args.length == 1) break;
+                        switch (args[2]) {
+                            case "customer":
+                                startRM(registryAddress, Resource.CUSTOMER);
+                                break;
+                            case "car":
+                                startRM(registryAddress, Resource.CAR);
+                                break;
+                            case "flight":
+                                startRM(registryAddress, Resource.FLIGHT);
+                                break;
+                            case "room":
+                                startRM(registryAddress, Resource.ROOM);
+                                break;
+                            default:
+                                break;
+                        }
                 }
             }
         } catch (Exception e) {
