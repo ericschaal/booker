@@ -1,6 +1,8 @@
 package middleware.transaction;
 
-public class TransactionAbortedException extends Exception {
+import java.io.Serializable;
+
+public class TransactionAbortedException extends Exception implements Serializable {
     public TransactionAbortedException(String message) {
         super(message);
     }

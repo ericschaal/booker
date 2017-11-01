@@ -3,7 +3,6 @@ package client;
 import common.Logger;
 import common.RemoteResourceManager;
 import common.TransactionalResourceManager;
-import middleware.MiddlewareResourceManager;
 import middleware.transaction.TransactionResult;
 import middleware.transaction.TransactionStatus;
 

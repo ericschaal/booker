@@ -5,11 +5,12 @@ import common.RemoteRevertibleResourceManager
 import common.Resource
 import middleware.lockManager.LockManager
 import resourceManager.RevertibleResourceManager
+import java.io.Serializable
 import java.util.*
 import kotlin.concurrent.timerTask
 
 
-class Transaction {
+class Transaction : Serializable {
 
     var id : Int
     private var involved: Array<RemoteRevertibleResourceManager?> = Array(4, { null })
@@ -45,15 +46,22 @@ class Transaction {
         timer.cancel()
         timer.purge()
 
+
         Logger.print().info("Commit sent", "Transaction:" + id)
 
     }
 
     @Throws(TransactionAbortedException::class)
     fun abort() { //TODO abort procedure.
+
+
         involved.forEach {
             it?.abortTransaction(id)
         }
+
+        timer.cancel()
+        timer.purge()
+
         Logger.print().info("Abort sent", "Transaction:" + id)
     }
 

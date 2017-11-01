@@ -28,7 +28,7 @@ public class MiddlewareResourceManager implements TransactionalResourceManager {
         this.customerRM = customerRM;
         this.roomRM = roomRM;
 
-        this.globalTxManager = new TxManager(this, 4000);
+        this.globalTxManager = new TxManager(this, 8000);
     }
 
     @Override

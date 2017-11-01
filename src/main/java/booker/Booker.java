@@ -40,7 +40,7 @@ public class Booker {
     }
 
     public static void startClient(NetworkAddress registry) throws RemoteException, NotBoundException {
-        new Client(registry);
+        new Client(registry).startConsole();
     }
 
     public static void startMiddleware(NetworkAddress registry) throws RemoteException, NotBoundException, AlreadyBoundException {
