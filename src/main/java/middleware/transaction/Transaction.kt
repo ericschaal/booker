@@ -1,7 +1,9 @@
 package middleware.transaction
 
+import common.Logger
 import common.Resource
 import middleware.lockManager.LockManager
+import resourceManager.RevertibleResourceManager
 import java.util.*
 import kotlin.concurrent.timerTask
 
@@ -9,7 +11,7 @@ import kotlin.concurrent.timerTask
 class Transaction {
 
     var id : Int
-    private var involved: Array<Boolean> = Array(4, { false })
+    private var involved: Array<RevertibleResourceManager?> = Array(4, { null })
     private var timer: Timer
 
 
@@ -17,24 +19,41 @@ class Transaction {
         id = txId
         timer = Timer()
         timer.schedule(timerTask {
-
+            Logger.print().info("Timeout", "Transaction:" + id)
+            abort()
         }, ttl)
+        Logger.print().info("Alive", "Transaction:" + id)
     }
 
-    fun isInvolved(resource: Resource) {
-        involved[resource.ordinal] = true
+    fun setInvolved(resource: Resource, revertibleResourceManager: RevertibleResourceManager) {
+        if (involved[resource.ordinal] == null) {
+            revertibleResourceManager.startTransaction(id)
+            involved[resource.ordinal] = revertibleResourceManager
+            Logger.print().info(resource.name + " is involved. Sending create.", "Transaction:" + id)
+        }
     }
 
     fun commit() {
+
+        involved.forEach {
+            it?.commitTransaction(id)
+        }
+
         LockManager.get().UnlockAll(id)
 
         timer.cancel()
         timer.purge()
+
+        Logger.print().info("Commit sent", "Transaction:" + id)
+
     }
 
     @Throws(TransactionAbortedException::class)
-    fun abort(txManager: TxManager) : Boolean {
-        return true
+    fun abort() { //TODO abort procedure.
+        involved.forEach {
+            it?.abortTransaction(id)
+        }
+        Logger.print().info("Abort sent", "Transaction:" + id)
     }
 
 

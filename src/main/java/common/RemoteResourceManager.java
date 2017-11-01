@@ -20,7 +20,7 @@ import java.util.Vector;
  * has succeeded.
  */
 
-public interface RemoteResourceManager extends Remote, RemoteConcurrentResourceManager {
+public interface RemoteResourceManager extends Remote {
     /* Add seats to a flight.  In general this will be used to create a new
      * flight, but it should be possible to add seats to an existing flight.
      * Adding to an existing flight should overwrite the current price of the

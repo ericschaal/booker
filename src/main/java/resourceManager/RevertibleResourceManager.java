@@ -1,49 +1,47 @@
 package resourceManager;
 
 import common.Logger;
-import common.RemoteResourceManager;
-
+import common.RemoteRevertibleResourceManager;
 import java.rmi.RemoteException;
+
 import java.util.Vector;
 
-public class RevertibleResourceManager implements RemoteResourceManager {
+public class RevertibleResourceManager implements RemoteRevertibleResourceManager {
 
-    private final ResourceManagerImp rm;
-    private final History history = new History();
+    private final ResourceManagerImpl rm = new ResourceManagerImpl();
+    private final TransactionHistory history = new TransactionHistory();
 
-    public RevertibleResourceManager(ResourceManagerImp rm) {
-        this.rm = rm;
+    public void startTransaction(int txId) throws RemoteException {
+        history.addToHistory(txId, Database.getActiveDb().cloneDb());
     }
 
-    public static void main(String[] args) {
+    public boolean abortTransaction(int txId) throws RemoteException {
+        return history.abortTransaction(txId);
+    }
 
-
+    public boolean commitTransaction(int txId) throws RemoteException {
+        return history.commitTransaction(txId);
     }
 
     @Override
     public boolean addFlight(int id, int flightNum, int flightSeats, int flightPrice) throws RemoteException {
-        history.addtoHistory(id, () -> rm.deleteFlight(id, flightNum, flightSeats));
         return rm.addFlight(id, flightNum, flightSeats, flightPrice);
     }
 
     @Override
     public boolean addCars(int id, String location, int numCars, int price) throws RemoteException {
-        history.addtoHistory(id, () -> rm.deleteCars(id, location, numCars));
         return rm.addCars(id, location, numCars, price);
     }
 
     @Override
     public boolean addRooms(int id, String location, int numRooms, int price) throws RemoteException {
-        history.addtoHistory(id, () -> rm.deleteRooms(id, location, numRooms));
         return rm.addCars(id, location, numRooms, price);
     }
 
     //TODO check this method
     @Override
     public int newCustomer(int id) throws RemoteException {
-        int cid = rm.newCustomer(id);
-        history.addtoHistory(id, () -> rm.deleteCustomer(id, cid));
-        return cid;
+        return rm.newCustomer(id);
     }
 
     @Override
@@ -58,7 +56,6 @@ public class RevertibleResourceManager implements RemoteResourceManager {
         int price = rm.queryFlightPrice(id, flightNum);
         //TODO check if item exists
 
-        history.addtoHistory(id, () -> addFlight(1, flightNum, count, price));
 
         return rm.deleteFlight(1, flightNum);
     }

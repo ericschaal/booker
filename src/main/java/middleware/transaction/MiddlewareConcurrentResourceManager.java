@@ -4,9 +4,11 @@ import common.Logger;
 import common.RemoteConcurrentResourceManager;
 import common.RemoteResourceManager;
 import common.Resource;
+import middleware.MiddlewareResourceManager;
 import middleware.lockManager.DeadlockException;
 import middleware.lockManager.LockManager;
 import middleware.transaction.TxManager;
+import resourceManager.RevertibleResourceManager;
 
 import java.rmi.RemoteException;
 import java.util.Vector;
@@ -14,11 +16,11 @@ import java.util.Vector;
 class MiddlewareConcurrentResourceManager implements RemoteConcurrentResourceManager {
 
 
-    private final RemoteResourceManager rm;
+    private final MiddlewareResourceManager rm;
     private TxManager txManager;
 
 
-    public MiddlewareConcurrentResourceManager(RemoteResourceManager rm, TxManager txManager) {
+    public MiddlewareConcurrentResourceManager(MiddlewareResourceManager rm, TxManager txManager) {
         this.rm = rm;
         this.txManager = txManager;
     }

@@ -2,6 +2,7 @@ package client;
 
 import common.Logger;
 import common.RemoteResourceManager;
+import common.TransactionalResourceManager;
 import middleware.MiddlewareResourceManager;
 import middleware.transaction.TransactionResult;
 import middleware.transaction.TransactionStatus;
@@ -10,11 +11,11 @@ import middleware.transaction.TransactionStatus;
 import java.rmi.RemoteException;
 import java.util.Vector;
 
-public class TransactionalResourceManager implements RemoteResourceManager {
+public class ResourceManager implements RemoteResourceManager {
     
-    private final MiddlewareResourceManager rm;
+    private final TransactionalResourceManager rm;
 
-    public TransactionalResourceManager(MiddlewareResourceManager rm) {
+    public ResourceManager(MiddlewareResourceManager rm) {
         this.rm = rm;
     }
 
@@ -75,7 +76,7 @@ public class TransactionalResourceManager implements RemoteResourceManager {
 
     @Override
     public boolean newCustomer(int id, int cid) throws RemoteException {
-        Logger.print().error("Unimplemented", "TransactionalResourceManager");
+        Logger.print().error("Unimplemented", "ResourceManager");
         return false;
     }
 
@@ -272,19 +273,19 @@ public class TransactionalResourceManager implements RemoteResourceManager {
 
     @Override
     public boolean reserveFlight(int id, int customer, int flightNumber, int count) throws RemoteException {
-        Logger.print().error("Unimplemented", "TransactionalResourceManager");
+        Logger.print().error("Unimplemented", "ResourceManager");
         return false;
     }
 
     @Override
     public boolean reserveCar(int id, int customer, String location, int count) throws RemoteException {
-        Logger.print().error("Unimplemented", "TransactionalResourceManager");
+        Logger.print().error("Unimplemented", "ResourceManager");
         return false;
     }
 
     @Override
     public boolean reserveRoom(int id, int customer, String location, int count) throws RemoteException {
-        Logger.print().error("Unimplemented", "TransactionalResourceManager");
+        Logger.print().error("Unimplemented", "ResourceManager");
         return false;
     }
 
