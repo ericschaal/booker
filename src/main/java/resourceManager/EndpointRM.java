@@ -19,7 +19,7 @@ public class EndpointRM {
 
         Registry registry = LocateRegistry.getRegistry(registryAddress.getIp(), registryAddress.getPort());
 
-        RevertibleResourceManager obj = new RevertibleResourceManager();
+        ResourceManagerImpl obj = new ResourceManagerImpl();
 
         RemoteRevertibleResourceManager rm = (RemoteRevertibleResourceManager) UnicastRemoteObject.exportObject(obj, 0);
 

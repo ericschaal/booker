@@ -122,14 +122,11 @@ public class ResourceManager implements RemoteResourceManager {
     public boolean deleteCustomer(int id, int customer) throws RemoteException {
         TransactionResult transactionResult = rm.runInTransaction(
                 (resourceManager, txId, result, abort) -> {
-
-                    boolean temp = resourceManager.deleteCustomer(txId, customer);
-                    if (!temp)
+                    boolean opResult = resourceManager.deleteCustomer(txId, customer);
+                    if (!opResult)
                         abort.invoke();
 
-                    //TODO fetch reservations and delete them.
-
-                    return result.setResult(temp);
+                    return result.setResult(opResult);
                 }
         );
         if (transactionResult.getStatus() == TransactionStatus.OK) {
@@ -268,24 +265,6 @@ public class ResourceManager implements RemoteResourceManager {
             Logger.print().warning("Transaction aborted");
             return false;
         }
-    }
-
-    @Override
-    public boolean reserveFlight(int id, int customer, int flightNumber, int count) throws RemoteException {
-        Logger.print().error("Unimplemented", "ResourceManager");
-        return false;
-    }
-
-    @Override
-    public boolean reserveCar(int id, int customer, String location, int count) throws RemoteException {
-        Logger.print().error("Unimplemented", "ResourceManager");
-        return false;
-    }
-
-    @Override
-    public boolean reserveRoom(int id, int customer, String location, int count) throws RemoteException {
-        Logger.print().error("Unimplemented", "ResourceManager");
-        return false;
     }
 
     @Override

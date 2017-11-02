@@ -1,5 +1,7 @@
 package middleware.lockManager;
 
+import com.sun.org.apache.regexp.internal.RE;
+
 import java.util.BitSet;
 import java.util.Vector;
 import java.util.concurrent.locks.Lock;
@@ -68,6 +70,8 @@ public class LockManager
                         }
                          
                         if (bConvert.get(0) == true) {
+                             trxnObj.lockType = READ;
+                             dataObj.lockType = READ;
                             // lock conversion 
                             // *** ADD CODE HERE *** to carry out the lock conversion in the
                             // lock table

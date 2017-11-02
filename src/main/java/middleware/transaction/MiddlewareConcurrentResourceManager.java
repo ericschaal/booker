@@ -2,13 +2,10 @@ package middleware.transaction;
 
 import common.Logger;
 import common.RemoteConcurrentResourceManager;
-import common.RemoteResourceManager;
 import common.Resource;
 import middleware.MiddlewareResourceManager;
 import middleware.lockManager.DeadlockException;
 import middleware.lockManager.LockManager;
-import middleware.transaction.TxManager;
-import resourceManager.RevertibleResourceManager;
 
 import java.rmi.RemoteException;
 import java.util.Vector;
@@ -16,6 +13,7 @@ import java.util.Vector;
 class MiddlewareConcurrentResourceManager implements RemoteConcurrentResourceManager {
 
 
+    //TODO use lockAndEnlist everywhere
     private final MiddlewareResourceManager rm;
     private TxManager txManager;
 
@@ -26,24 +24,26 @@ class MiddlewareConcurrentResourceManager implements RemoteConcurrentResourceMan
     }
 
 
+    private void lockAndEnlist(int transactionId, int lockLevel, Resource resource) throws DeadlockException {
+        LockManager.get().Lock(transactionId, resource.name(), lockLevel);
+        txManager.enlist(transactionId, resource);
+    }
+
     @Override
     public boolean addFlight(int id, int flightNum, int flightSeats, int flightPrice) throws DeadlockException, RemoteException {
-        LockManager.get().Lock(id, Resource.FLIGHT.name(), LockManager.WRITE);
-        txManager.enlist(id, Resource.FLIGHT);
+        lockAndEnlist(id, LockManager.WRITE, Resource.FLIGHT);
         return rm.addFlight(id, flightNum, flightSeats, flightPrice);
     }
 
     @Override
     public boolean addCars(int id, String location, int numCars, int price) throws DeadlockException, RemoteException {
-        LockManager.get().Lock(id, Resource.CAR.name(), LockManager.WRITE);
-        txManager.enlist(id, Resource.CAR);
+        lockAndEnlist(id, LockManager.WRITE, Resource.CAR);
         return rm.addCars(id, location, numCars, price);
     }
 
     @Override
     public boolean addRooms(int id, String location, int numRooms, int price) throws DeadlockException, RemoteException {
-        LockManager.get().Lock(id, Resource.ROOM.name(), LockManager.WRITE);
-        txManager.enlist(id, Resource.ROOM);
+        lockAndEnlist(id, LockManager.WRITE, Resource.CAR);
         return rm.addRooms(id, location, numRooms, price);
     }
 
@@ -139,22 +139,22 @@ class MiddlewareConcurrentResourceManager implements RemoteConcurrentResourceMan
 
     @Override
     public boolean reserveFlight(int id, int customer, int flightNumber) throws DeadlockException, RemoteException {
-        LockManager.get().Lock(id, Resource.FLIGHT.name(), LockManager.WRITE);
-        txManager.enlist(id, Resource.FLIGHT);
+        lockAndEnlist(id, LockManager.WRITE, Resource.CUSTOMER);
+        lockAndEnlist(id, LockManager.WRITE, Resource.FLIGHT);
         return rm.reserveFlight(id, customer, flightNumber);
     }
 
     @Override
     public boolean reserveCar(int id, int customer, String location) throws DeadlockException, RemoteException {
-        LockManager.get().Lock(id, Resource.CAR.name(), LockManager.WRITE);
-        txManager.enlist(id, Resource.CAR);
+        lockAndEnlist(id, LockManager.WRITE, Resource.CUSTOMER);
+        lockAndEnlist(id, LockManager.WRITE, Resource.CAR);
         return rm.reserveCar(id, customer, location);
     }
 
     @Override
     public boolean reserveRoom(int id, int customer, String location) throws DeadlockException, RemoteException {
-        LockManager.get().Lock(id, Resource.ROOM.name(), LockManager.WRITE);
-        txManager.enlist(id, Resource.ROOM);
+        lockAndEnlist(id, LockManager.WRITE, Resource.CUSTOMER);
+        lockAndEnlist(id, LockManager.WRITE, Resource.ROOM);
         return rm.reserveRoom(id, customer, location);
     }
 
@@ -178,8 +178,11 @@ class MiddlewareConcurrentResourceManager implements RemoteConcurrentResourceMan
 
     @Override
     public boolean itinerary(int id, int customer, Vector flightNumbers, String location, boolean Car, boolean Room) throws DeadlockException, RemoteException {
-        Logger.print().error("Unimplemented", "MiddlewareConcurrentResourceManager");
-        return false;
+        lockAndEnlist(id, LockManager.WRITE, Resource.CUSTOMER);
+        lockAndEnlist(id, LockManager.WRITE, Resource.FLIGHT);
+        if (Car) lockAndEnlist(id, LockManager.WRITE, Resource.CAR);
+        if (Room) lockAndEnlist(id, LockManager.WRITE, Resource.ROOM);
+        return rm.itinerary(id, customer, flightNumbers, location, Car, Room);
     }
 
 }

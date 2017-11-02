@@ -4,7 +4,6 @@ import common.Logger
 import common.RemoteRevertibleResourceManager
 import common.Resource
 import middleware.lockManager.LockManager
-import resourceManager.RevertibleResourceManager
 import java.io.Serializable
 import java.util.*
 import kotlin.concurrent.timerTask
@@ -29,7 +28,7 @@ class Transaction : Serializable {
 
     fun setInvolved(resource: Resource, revertibleResourceManager: RemoteRevertibleResourceManager) {
         if (involved[resource.ordinal] == null) {
-            revertibleResourceManager.startTransaction(id)
+            revertibleResourceManager.newTransaction(id)
             involved[resource.ordinal] = revertibleResourceManager
             Logger.print().info(resource.name + " is involved. Sending create.", "Transaction:" + id)
         }

@@ -5,6 +5,8 @@
 package resourceManager;
 
 import common.RemoteResourceManager;
+import common.RemoteRevertibleResourceManager;
+import common.Resource;
 import common.Trace;
 import common.hashtable.RMHashtable;
 import common.resource.*;
@@ -13,10 +15,23 @@ import java.util.*;
 import java.rmi.RemoteException;
 
 
-public class ResourceManagerImpl implements RemoteResourceManager {
+public class ResourceManagerImpl implements RemoteRevertibleResourceManager {
 
     public ResourceManagerImpl() { }
 
+    private final TransactionHistory history = new TransactionHistory();
+
+    public void newTransaction(int txId) throws RemoteException {
+        history.addToHistory(txId, Database.getActiveDb().cloneDb());
+    }
+
+    public boolean abortTransaction(int txId) throws RemoteException {
+        return history.abortTransaction(txId);
+    }
+
+    public boolean commitTransaction(int txId) throws RemoteException {
+        return history.commitTransaction(txId);
+    }
 
 
     private void removeData(int id, String key) {
@@ -309,8 +324,7 @@ public class ResourceManagerImpl implements RemoteResourceManager {
 
 
     // Deletes customer from the database. 
-    public boolean deleteCustomer(int id, int customerID)
-            throws RemoteException {
+    public boolean deleteCustomer(int id, int customerID) throws RemoteException {
         return false;
     }
 
@@ -354,38 +368,47 @@ public class ResourceManagerImpl implements RemoteResourceManager {
         return reserveItem(id, customerID, Flight.getKey(flightNum), String.valueOf(flightNum), 1);
     }
 
-    @Override
-    public boolean reserveFlight(int id, int customer, int flightNumber, int count) throws RemoteException {
-         return reserveItem(id, customer, Flight.getKey(flightNumber), String.valueOf(flightNumber), count);
-    }
-
-    @Override
-    public boolean reserveCar(int id, int customer, String location, int count) throws RemoteException {
-        return reserveItem(id, customer, Car.getKey(location), location, count);
-    }
-
-    @Override
-    public boolean reserveRoom(int id, int customer, String locationd, int count) throws RemoteException {
-        return reserveItem(id, customer, Hotel.getKey(locationd), locationd, count);
-    }
-
     // Reserve an itinerary
     public boolean itinerary(int id, int customer, Vector flightNumbers, String location, boolean Car, boolean Room)
             throws RemoteException {
         return false;
     }
 
-    public boolean freeCar(int id, int customer, String location, int count) throws RemoteException {
-        return freeItem(id, Car.getKey(location), count);
+    @Override
+    public boolean isCustomer(int id, int cid) throws RemoteException {
+        Trace.info("RM::isCustomer(" + id + ", " + cid + ") called");
+        Customer cust = (Customer) readData(id, Customer.getKey(cid));
+        return (cust != null);
     }
 
-    public boolean freeRoom(int id, int customer, String location, int count) throws RemoteException {
-        return freeItem(id, Hotel.getKey(location), count);
+    @Override
+    public boolean addReservationToCustomer(int id, int cid, String key, String location, int price, Resource resourceType) throws RemoteException {
+        Trace.info("RM::addReservationToCustomer(" + id + ", " + cid + ", " + key + ", " + location + ", " + price + ") called");
+        Customer cust = (Customer) readData(id, Customer.getKey(cid));
+        if (cust == null) {
+            Trace.info("RM::addReservationToCustomer failed. Customer doesn't exist");
+            return false;
+        } {
+            cust.reserve(key, location, price, resourceType);
+            writeData( id, cust.getKey(), cust );
+            Trace.info("RM::addReservationToCustomer succeeded.");
+            return true;
+        }
     }
 
-    public boolean freeFlight(int id, int customer, int flightNumber, int count) throws RemoteException {
-        return freeItem(id, Flight.getKey(flightNumber), count);
+    //TODO implement this.
+    @Override
+    public boolean freeFlight(int id, int flightNumber, int count) {
+        return false;
     }
 
+    @Override
+    public boolean freeCar(int id, String location, int count) {
+        return false;
+    }
 
+    @Override
+    public boolean freeRoom(int id, String location, int count) {
+        return false;
+    }
 }

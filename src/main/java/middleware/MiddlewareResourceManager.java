@@ -1,16 +1,18 @@
 package middleware;
 
 import common.*;
+import common.hashtable.RMHashtable;
+import common.resource.*;
 import kotlin.Unit;
 import kotlin.jvm.functions.Function0;
 
 import java.rmi.RemoteException;
+import java.util.Enumeration;
 import java.util.Vector;
 
 import middleware.transaction.TransactionBody;
 import middleware.transaction.TransactionResult;
 import middleware.transaction.TxManager;
-import resourceManager.RevertibleResourceManager;
 
 public class MiddlewareResourceManager implements TransactionalResourceManager {
 
@@ -28,7 +30,7 @@ public class MiddlewareResourceManager implements TransactionalResourceManager {
         this.customerRM = customerRM;
         this.roomRM = roomRM;
 
-        this.globalTxManager = new TxManager(this, 8000);
+        this.globalTxManager = new TxManager(this, 12 * 1000 /* 12 seconds */);
     }
 
     @Override
@@ -77,9 +79,39 @@ public class MiddlewareResourceManager implements TransactionalResourceManager {
         return roomRM.deleteRooms(id, location);
     }
 
+
+    //TODO is this the right place?
     @Override
     public boolean deleteCustomer(int id, int customer) throws RemoteException {
-        return carRM.deleteCustomer(id, customer);
+        RMHashtable reservationHT = customerRM.getCustomerReservations(id, customer);
+        if (reservationHT != null) {
+            for (Enumeration e = reservationHT.elements(); e.hasMoreElements(); ) {
+                ReservedItem reservedItem = (ReservedItem) (e.nextElement());
+                Trace.info("RM::deleteCustomer(" + id + ", " + customer + ") has reserved " + reservedItem.getResourceType() + " " + reservedItem.getCount() + " times");
+                switch (reservedItem.getResourceType()) {
+                    case CAR:
+                        if (!carRM.freeCar(id, reservedItem.getLocation(), reservedItem.getCount())) {
+                            return false;
+                        }
+                        break;
+                    case ROOM:
+                        if (!roomRM.freeRoom(id, reservedItem.getLocation(), reservedItem.getCount())) {
+                            return false;
+                        }
+                        break;
+                    case FLIGHT:
+                        if (!flightRM.freeFlight(id, Integer.valueOf(reservedItem.getLocation()), reservedItem.getCount())) {
+                            return false;
+                        }
+                        break;
+                    case CUSTOMER:
+                        Trace.info("RM::deleteCustomer error customer is not reservable.");
+                        return false;
+                }
+            }
+            return customerRM.deleteCustomer(id, customer);
+        }
+        return false;
     }
 
     @Override
@@ -119,40 +151,72 @@ public class MiddlewareResourceManager implements TransactionalResourceManager {
 
     @Override
     public boolean reserveFlight(int id, int customer, int flightNumber) throws RemoteException {
-        return flightRM.reserveFlight(id, customer, flightNumber);
+        if (customerRM.isCustomer(id, customer)) {
+            if (flightRM.reserveFlight(id, customer, flightNumber)) {
+                int price = flightRM.queryFlightPrice(id, flightNumber);
+                return customerRM.addReservationToCustomer(id, customer, Flight.getKey(flightNumber), String.valueOf(flightNumber), price, Resource.FLIGHT);
+            }
+        }
+        return false;
     }
 
     @Override
     public boolean reserveCar(int id, int customer, String location) throws RemoteException {
-        return carRM.reserveCar(id, customer, location);
+        if (customerRM.isCustomer(id, customer)) {
+            if (carRM.reserveCar(id, customer, location)) {
+                int price = carRM.queryCarsPrice(id, location);
+                return customerRM.addReservationToCustomer(id, customer, Car.getKey(location), location, price, Resource.CAR);
+            }
+        }
+        return false;
     }
 
     @Override
     public boolean reserveRoom(int id, int customer, String location) throws RemoteException {
-        return roomRM.reserveRoom(id, customer, location);
-    }
-
-    @Override
-    public boolean reserveFlight(int id, int customer, int flightNumber, int count) throws RemoteException {
-        Logger.print().error("Unimplemented", "MiddlewareConcurrentResourceManager");
+        if (customerRM.isCustomer(id, customer)) {
+            if (roomRM.reserveRoom(id, customer, location)) {
+                int price = roomRM.queryRoomsPrice(id, location);
+                return customerRM.addReservationToCustomer(id, customer, Hotel.getKey(location), location, price, Resource.ROOM);
+            }
+        }
         return false;
     }
 
-    @Override
-    public boolean reserveCar(int id, int customer, String location, int count) throws RemoteException {
-        Logger.print().error("Unimplemented", "MiddlewareConcurrentResourceManager");
-        return false;
-    }
 
+    //TODO is this the right place?
     @Override
-    public boolean reserveRoom(int id, int customer, String locationd, int count) throws RemoteException {
-        Logger.print().error("Unimplemented", "MiddlewareConcurrentResourceManager");
-        return false;
-    }
+    public boolean itinerary(int id, int customer, Vector flightNumbers, String location, boolean wantsCar, boolean wantsRoom) throws RemoteException {
+        if (customerRM.isCustomer(id, customer)) {
+            for (Object obj : flightNumbers) {
+                int flightNumber = Integer.parseInt(obj.toString());
+                if (flightRM.reserveFlight(id, customer, flightNumber)) {
+                    int price = flightRM.queryFlightPrice(id, flightNumber);
+                    if (!customerRM.addReservationToCustomer(id, customer, Flight.getKey(flightNumber), String.valueOf(flightNumber), price, Resource.FLIGHT)) {
+                        return false;
+                    }
+                } else return false;
+            }
 
-    @Override
-    public boolean itinerary(int id, int customer, Vector flightNumbers, String location, boolean Car, boolean Room) throws RemoteException {
-        Logger.print().error("Unimplemented", "MiddlewareConcurrentResourceManager");
+            if (wantsCar) {
+                if (carRM.reserveCar(id, customer, location)) {
+                    int price = carRM.queryCarsPrice(id, location);
+                    if (!customerRM.addReservationToCustomer(id, customer, Car.getKey(location), location, price, Resource.CAR)) {
+                        return false;
+                    }
+                } else return false;
+            }
+
+            if (wantsRoom) {
+                if (roomRM.reserveRoom(id, customer, location)) {
+                    int price = roomRM.queryRoomsPrice(id, location);
+                    if (!customerRM.addReservationToCustomer(id, customer, Hotel.getKey(location), location, price, Resource.ROOM)) {
+                        return false;
+                    }
+                } else return false;
+            }
+            return true;
+        }
+
         return false;
     }
 
