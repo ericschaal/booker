@@ -302,7 +302,7 @@ public class ResourceManagerImpl implements RemoteRevertibleResourceManager {
             throws RemoteException {
         Trace.info("INFO: RM::newCustomer(" + id + ") called");
         // Generate a globally unique ID for the new customer
-        int cid = Integer.parseInt(String.valueOf(id) +
+        int cid = Integer.parseInt(String.valueOf(id%1000) +
                 String.valueOf(Calendar.getInstance().get(Calendar.MILLISECOND)) +
                 String.valueOf(Math.round(Math.random() * 100 + 1)));
         Customer cust = new Customer(cid);

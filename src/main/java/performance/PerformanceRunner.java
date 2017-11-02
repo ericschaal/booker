@@ -28,7 +28,7 @@ public class PerformanceRunner {
     private long maxTime;
     private long finishTime;
 
-    private int MAXDELAY = 8000;
+    private int MAXDELAY = 2000;
     private int LOGGER_DISPLAY = 3000;
 
     private int counter = 1;
@@ -42,7 +42,6 @@ public class PerformanceRunner {
 
 
     private DecimalFormat df = new DecimalFormat();
-
 
 
     private ResourceManager rm;
@@ -78,21 +77,24 @@ public class PerformanceRunner {
         for (int i = 0; i < TXCOUNT; i++) {
             Logger.print().statement("-----------------------");
             Logger.print().statement("", String.valueOf(i));
-            System.out.println("Mean: " + df.format(runningTimeStatsPerTransaction[i].getMean()));
+            System.out.println("Mean: " + df.format(runningTimeStatsPerTransaction[i].getMean()) + "ms");
             System.out.println("Variance: " + df.format(runningTimeStatsPerTransaction[i].getVariance()));
-            System.out.println("Standard Deviation: " + df.format(Math.sqrt(runningTimeStatsPerTransaction[i].getVariance())));
+            System.out.println("Standard Deviation: " + df.format(Math.sqrt(runningTimeStatsPerTransaction[i].getVariance())) + "ms");
         }
+        System.out.println("");
         Logger.print().statement("-----------------------");
         System.out.println("Average Execution time");
-        System.out.println("Mean: " + df.format(runningTimeStats.getMean()));
+        System.out.println("Mean: " + df.format(runningTimeStats.getMean()) + "ms");
         System.out.println("Variance: " + df.format(runningTimeStats.getVariance()));
-        System.out.println("Standard Deviation: " + df.format(Math.sqrt(runningTimeStats.getVariance())));
+        System.out.println("Standard Deviation: " + df.format(Math.sqrt(runningTimeStats.getVariance())) + "ms");
     }
 
     private boolean shouldTerminate() {
         if (maxIterations > 0 && counter >= maxIterations) {
             return true;
         } else if (maxTime > 0 && finishTime <= System.currentTimeMillis()) {
+            return true;
+        } else if (counter > Integer.MAX_VALUE) {
             return true;
         } else return false;
     }
@@ -101,8 +103,8 @@ public class PerformanceRunner {
         long startTxTime;
         long txRunTime;
 
-        if (maxTime > 0) finishTime = System.currentTimeMillis() + maxTime*1000;
-        Logger.print().info("Performance runner stating with load " + loadEvolution.getLoad(counter));
+        if (maxTime > 0) finishTime = System.currentTimeMillis() + maxTime * 1000;
+        Logger.print().info("Performance runner stating with load " + loadEvolution.getLoad(counter) + "Tx/s");
         Logger.print().info("Will stop at " + DateFormat.getTimeInstance().format(new Date(finishTime)) + " or at " + maxIterations);
 
         lastTimerTrigger = System.currentTimeMillis();
@@ -122,16 +124,17 @@ public class PerformanceRunner {
             }
         }, new Date(), LOGGER_DISPLAY);
 
-        while(true) {
+        while (true) {
             try {
 
                 if (shouldTerminate()) break;
 
-                txCountSinceLastrigger++;
 
                 startTxTime = System.currentTimeMillis();
                 int txNumber = rm.runRandom();
                 txRunTime = System.currentTimeMillis() - startTxTime;
+
+                txCountSinceLastrigger++;
 
                 runningTimeStatsPerTransaction[txNumber].addValue(txRunTime);
                 runningTimeStats.addValue(txRunTime);
@@ -139,16 +142,26 @@ public class PerformanceRunner {
                 long txInterval = (long) (1.0 / loadEvolution.getLoad(counter) * 1000.0);
                 long waitTime = txInterval - txRunTime;
 
-                if (waitTime < 0 && counter > loadEvolution.getLoad(counter)*5) {
-                    Logger.print().warning("System taking too long to respond. Cannot keep up load");
+
+                if (waitTime < 0 && counter > loadEvolution.getLoad(counter) * 5) {
+                    Logger.print().warning("Approaching client sending limit.");
                     if (waitTime < - MAXDELAY) {
                         stop();
                         return;
                     }
                     continue;
                 }
+
+                if (txRunTime > txInterval && counter > loadEvolution.getLoad(counter) * 5) {
+                    Logger.print().warning("Approaching system's max throughput.");
+                    if (txRunTime > MAXDELAY) {
+                        stop();
+                        return;
+                    }
+                }
+
                 int rand = ThreadLocalRandom.current().nextInt(-50, 50 + 1);
-                TimeUnit.MILLISECONDS.sleep(waitTime+rand);
+                TimeUnit.MILLISECONDS.sleep(waitTime + rand);
                 counter++;
 
 
@@ -168,7 +181,6 @@ public class PerformanceRunner {
         triggerAverage.purge();
         printStats();
     }
-
 
 
 }
