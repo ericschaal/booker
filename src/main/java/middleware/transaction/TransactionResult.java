@@ -1,7 +1,9 @@
 package middleware.transaction;
 
 
-public class TransactionResult {
+import java.io.Serializable;
+
+public class TransactionResult implements Serializable {
 
     private TransactionStatus status;
     private String result;

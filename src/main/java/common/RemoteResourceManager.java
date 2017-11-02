@@ -20,7 +20,7 @@ import java.util.Vector;
  * has succeeded.
  */
 
-public interface RemoteResourceManager extends Remote, RemoteConcurrentResourceManager {
+public interface RemoteResourceManager extends Remote {
     /* Add seats to a flight.  In general this will be used to create a new
      * flight, but it should be possible to add seats to an existing flight.
      * Adding to an existing flight should overwrite the current price of the
@@ -105,17 +105,6 @@ public interface RemoteResourceManager extends Remote, RemoteConcurrentResourceM
 
     /* reserve a room certain at this location */
     public boolean reserveRoom(int id, int customer, String locationd) throws RemoteException;
-
-    /* Reserve a seat on this flight*/
-    public boolean reserveFlight(int id, int customer, int flightNumber, int count) throws RemoteException;
-
-    /* reserve a car at this location */
-    public boolean reserveCar(int id, int customer, String location, int count) throws RemoteException;
-
-    /* reserve a room certain at this location */
-    public boolean reserveRoom(int id, int customer, String locationd, int count) throws RemoteException;
-
-
     /* reserve an itinerary */
     public boolean itinerary(int id, int customer, Vector flightNumbers, String location, boolean Car, boolean Room) throws RemoteException;
 }

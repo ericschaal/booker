@@ -1,5 +1,7 @@
 package middleware.transaction;
 
-public enum TransactionStatus {
+import java.io.Serializable;
+
+public enum TransactionStatus implements Serializable {
     OK, ABORT
 }

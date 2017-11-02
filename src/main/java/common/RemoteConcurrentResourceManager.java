@@ -2,10 +2,11 @@ package common;
 
 import middleware.lockManager.DeadlockException;
 
+import java.rmi.Remote;
 import java.rmi.RemoteException;
 import java.util.Vector;
 
-public interface RemoteConcurrentResourceManager {
+public interface RemoteConcurrentResourceManager extends Remote {
     
     boolean addFlight(int id, int flightNum, int flightSeats, int flightPrice) throws DeadlockException, RemoteException;
 
