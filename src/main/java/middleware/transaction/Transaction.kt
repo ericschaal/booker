@@ -50,7 +50,6 @@ class Transaction : Serializable {
 
     }
 
-    @Throws(TransactionAbortedException::class)
     fun abort() { //TODO abort procedure.
 
 
@@ -58,10 +57,13 @@ class Transaction : Serializable {
             it?.abortTransaction(id)
         }
 
+        LockManager.get().UnlockAll(id)
+
         timer.cancel()
         timer.purge()
 
         Logger.print().info("Abort sent", "Transaction:" + id)
+
     }
 
 

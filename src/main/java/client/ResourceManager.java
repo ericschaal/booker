@@ -271,28 +271,35 @@ public class ResourceManager implements RemoteResourceManager {
     public boolean itinerary(int id, int customer, Vector flightNumbers, String location, boolean Car, boolean Room) throws RemoteException {
         TransactionResult transactionResult = rm.runInTransaction(
                 (resourceManager, txId, result, abort) -> {
-                    if (true /*TODO check customer */) {
-                        for (String rawFlightNumber : (Vector<String>) flightNumbers) {
-                            int flightNumber = Integer.valueOf(rawFlightNumber);
-                            if (!resourceManager.reserveFlight(txId, customer, flightNumber))
-                                abort.invoke();
-                        }
-                        if (Car) {
-                            if (!resourceManager.reserveCar(txId, customer, location))
-                                abort.invoke();
-                        }
-                        if (Room) {
-                            if (!resourceManager.reserveRoom(txId, customer, location))
-                                abort.invoke();
-                        }
+//                    if (true /*TODO check customer */) {
+//                        for (String rawFlightNumber : (Vector<String>) flightNumbers) {
+//                            int flightNumber = Integer.valueOf(rawFlightNumber);
+//                            if (!resourceManager.reserveFlight(txId, customer, flightNumber))
+//                                abort.invoke();
+//                        }
+//                        if (Car) {
+//                            if (!resourceManager.reserveCar(txId, customer, location))
+//                                abort.invoke();
+//                        }
+//                        if (Room) {
+//                            if (!resourceManager.reserveRoom(txId, customer, location))
+//                                abort.invoke();
+//                        }
+//
+//                        //TODO add reservations to customer
+//
+//                        return result.setResult(true);
+//                    } else
+//                        abort.invoke();
+//
+//                    return result.setResult(false);
 
-                        //TODO add reservations to customer
-
-                        return result.setResult(true);
-                    } else
+                    boolean opResult = resourceManager.itinerary(txId, customer, flightNumbers, location, Car, Room);
+                    if (!opResult)
                         abort.invoke();
 
-                    return result.setResult(false);
+                    return result.setResult(opResult);
+
                 }
         );
         if (transactionResult.getStatus() == TransactionStatus.OK) {

@@ -14,8 +14,8 @@ public interface RemoteRevertibleResourceManager extends RemoteResourceManager {
     boolean addReservationToCustomer(int id, int cid, String key, String location, int price, Resource resource) throws RemoteException;
     RMHashtable getCustomerReservations(int id, int customerID) throws RemoteException;
 
-    boolean freeFlight(int id, int flightNumber, int count);
-    boolean freeCar(int id, String location, int count);
-    boolean freeRoom(int id, String location, int count);
+    boolean freeFlight(int id, int flightNumber, int count) throws RemoteException;
+    boolean freeCar(int id, String location, int count) throws RemoteException;
+    boolean freeRoom(int id, String location, int count) throws RemoteException;
 
 }

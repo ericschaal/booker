@@ -53,7 +53,6 @@ class TxManager {
     private fun newTransaction(): Transaction {
         var transactionId = transactionCounter++
         var transaction = Transaction(transactionId, ttl)
-
         liveTransaction.put(transactionId, transaction)
         Logger.print().info("Transaction " + transaction.id + " started", "TxManager")
         return transaction
@@ -65,7 +64,10 @@ class TxManager {
 
         try {
 
-            var result = body.apply(concurrentRM, transaction.id, TransactionResult(TransactionStatus.OK), { transaction.abort() })
+            var result = body.apply(concurrentRM, transaction.id, TransactionResult(TransactionStatus.OK), {
+                transaction.abort()
+                throw TransactionAbortedException("Transaction aborted")
+            })
             commitTransaction(transaction)
 
             return result
@@ -73,14 +75,16 @@ class TxManager {
         } catch (e: DeadlockException) {
             Logger.print().error(e.message, "TxManager")
             transaction.abort()
+            liveTransaction.remove(transaction.id)
             return TransactionResult(TransactionStatus.ABORT)
         } catch (e: RemoteException) {
             Logger.print().error(e.message, "TxManager")
             transaction.abort()
+            liveTransaction.remove(transaction.id)
             return TransactionResult(TransactionStatus.ABORT)
         } catch (e: TransactionAbortedException) {
             Logger.print().error(e.message, "TxManager")
-            transaction.abort()
+            liveTransaction.remove(transaction.id)
             return TransactionResult(TransactionStatus.ABORT)
         }
     }

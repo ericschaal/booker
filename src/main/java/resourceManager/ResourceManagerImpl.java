@@ -4,10 +4,7 @@
 //
 package resourceManager;
 
-import common.RemoteResourceManager;
-import common.RemoteRevertibleResourceManager;
-import common.Resource;
-import common.Trace;
+import common.*;
 import common.hashtable.RMHashtable;
 import common.resource.*;
 
@@ -66,7 +63,7 @@ public class ResourceManagerImpl implements RemoteRevertibleResourceManager {
     }
 
     private boolean freeItem(int id, String key, int count) {
-        Trace.info("RM::freeItem( " + id + ", " + key + ", " + key + ", " +count+") called" );
+        Trace.info("RM::freeItem( " + id + ", " + key + ", " +count+") called" );
         ReservableItem item  = (ReservableItem) readData(id, key);
         if (item.getReserved()-count < 0) return false;
         item.setReserved(item.getReserved()-count);
@@ -285,7 +282,17 @@ public class ResourceManagerImpl implements RemoteRevertibleResourceManager {
     // return a bill
     public String queryCustomerInfo(int id, int customerID)
             throws RemoteException {
-        return null;
+        Trace.info("RM::queryCustomerInfo(" + id + ", " + customerID + ") called" );
+        Customer cust = (Customer) readData( id, Customer.getKey(customerID) );
+        if ( cust == null ) {
+            Trace.warn("RM::queryCustomerInfo(" + id + ", " + customerID + ") failed--customer doesn't exist" );
+            return "";   // NOTE: don't change this--WC counts on this value indicating a customer does not exist...
+        } else {
+            String s = cust.printBill();
+            Trace.info("RM::queryCustomerInfo(" + id + ", " + customerID + "), bill follows..." );
+            System.out.println( s );
+            return s;
+        } // if
     }
 
     // customer functions
@@ -293,16 +300,15 @@ public class ResourceManagerImpl implements RemoteRevertibleResourceManager {
 
     public int newCustomer(int id)
             throws RemoteException {
-//        Trace.info("INFO: RM::newCustomer(" + id + ") called");
-//        // Generate a globally unique ID for the new customer
-//        int cid = Integer.parseInt(String.valueOf(id) +
-//                String.valueOf(Calendar.getInstance().get(Calendar.MILLISECOND)) +
-//                String.valueOf(Math.round(Math.random() * 100 + 1)));
-//        Customer cust = new Customer(cid);
-//        writeData(id, cust.getKey(), cust);
-//        Trace.info("RM::newCustomer(" + cid + ") returns ID=" + cid);
-//        return cid;
-        return 0;
+        Trace.info("INFO: RM::newCustomer(" + id + ") called");
+        // Generate a globally unique ID for the new customer
+        int cid = Integer.parseInt(String.valueOf(id) +
+                String.valueOf(Calendar.getInstance().get(Calendar.MILLISECOND)) +
+                String.valueOf(Math.round(Math.random() * 100 + 1)));
+        Customer cust = new Customer(cid);
+        writeData(id, cust.getKey(), cust);
+        Trace.info("RM::newCustomer(" + cid + ") returns ID=" + cid);
+        return cid;
     }
 
     // I opted to pass in customerID instead. This makes testing easier
@@ -325,7 +331,18 @@ public class ResourceManagerImpl implements RemoteRevertibleResourceManager {
 
     // Deletes customer from the database. 
     public boolean deleteCustomer(int id, int customerID) throws RemoteException {
-        return false;
+        Trace.info("RM::deleteCustomer(" + id + ", " + customerID + ") called");
+        Customer cust = (Customer) readData(id, Customer.getKey(customerID));
+        if (cust == null) {
+            Trace.warn("RM::deleteCustomer(" + id + ", " + customerID + ") failed--customer doesn't exist");
+            return false;
+        } else {
+            // remove the customer from the storage
+            removeData(id, cust.getKey());
+
+            Trace.info("RM::deleteCustomer(" + id + ", " + customerID + ") succeeded");
+            return true;
+        }
     }
 
 
@@ -398,17 +415,17 @@ public class ResourceManagerImpl implements RemoteRevertibleResourceManager {
 
     //TODO implement this.
     @Override
-    public boolean freeFlight(int id, int flightNumber, int count) {
-        return false;
+    public boolean freeFlight(int id, int flightNumber, int count) throws RemoteException {
+        return freeItem(id, Flight.getKey(flightNumber), count);
     }
 
     @Override
-    public boolean freeCar(int id, String location, int count) {
-        return false;
+    public boolean freeCar(int id, String location, int count)  throws RemoteException {
+        return freeItem(id, Car.getKey(location), count);
     }
 
     @Override
-    public boolean freeRoom(int id, String location, int count) {
-        return false;
+    public boolean freeRoom(int id, String location, int count) throws RemoteException {
+        return freeRoom(id, Hotel.getKey(location), count);
     }
 }

@@ -84,7 +84,13 @@ class MiddlewareConcurrentResourceManager implements RemoteConcurrentResourceMan
     @Override
     public boolean deleteCustomer(int id, int customer) throws DeadlockException, RemoteException {
         LockManager.get().Lock(id, Resource.CUSTOMER.name(), LockManager.WRITE);
+        LockManager.get().Lock(id, Resource.FLIGHT.name(), LockManager.WRITE);
+        LockManager.get().Lock(id, Resource.CAR.name(), LockManager.WRITE);
+        LockManager.get().Lock(id, Resource.ROOM.name(), LockManager.WRITE);
         txManager.enlist(id, Resource.CUSTOMER);
+        txManager.enlist(id, Resource.FLIGHT);
+        txManager.enlist(id, Resource.CAR);
+        txManager.enlist(id, Resource.ROOM);
         return rm.deleteCustomer(id, customer);
     }
 
