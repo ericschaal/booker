@@ -64,7 +64,7 @@ public class Booker {
     }
 
     public static void startPerformanceAnalysis(NetworkAddress registry, LoadEvolution loadEvolution) throws RemoteException, NotBoundException {
-        new PerformanceRunner(registry, loadEvolution, 800, 0).start();
+        new PerformanceRunner(registry, loadEvolution, 120, 0).start();
     }
 
     public static NetworkAddress configure() {

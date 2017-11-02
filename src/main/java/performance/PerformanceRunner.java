@@ -21,6 +21,8 @@ import java.util.concurrent.TimeUnit;
 
 public class PerformanceRunner {
 
+    private static final int TXCOUNT = 7;
+
     private LoadEvolution loadEvolution;
     private int maxIterations;
     private long maxTime;
@@ -30,7 +32,7 @@ public class PerformanceRunner {
     private int LOGGER_DISPLAY = 3000;
 
     private int counter = 1;
-    private DescriptiveStatistics[] runningTimeStatsPerTransaction = new DescriptiveStatistics[5];
+    private DescriptiveStatistics[] runningTimeStatsPerTransaction = new DescriptiveStatistics[TXCOUNT];
     private DescriptiveStatistics runningTimeStats = new DescriptiveStatistics();
     private DescriptiveStatistics currentAverageLoad = new DescriptiveStatistics();
 
@@ -61,7 +63,7 @@ public class PerformanceRunner {
             Logger.print().error("Client failed to connect to Middleware.");
         }
 
-        for (int i = 0; i < 5; i++) {
+        for (int i = 0; i < TXCOUNT; i++) {
             runningTimeStatsPerTransaction[i] = new DescriptiveStatistics();
         }
 
@@ -70,16 +72,17 @@ public class PerformanceRunner {
     }
 
     private void printStats() {
-        System.out.println("-----------------------STATISTICS-----------------------");
+        Logger.print().statement("-----------------------STATISTICS-----------------------");
         System.out.println("-----------------------");
         System.out.println("Average Execution time per transaction number");
-        for (int i = 0; i < 5; i++) {
-            System.out.println(i);
+        for (int i = 0; i < TXCOUNT; i++) {
+            Logger.print().statement("-----------------------");
+            Logger.print().statement("", String.valueOf(i));
             System.out.println("Mean: " + df.format(runningTimeStatsPerTransaction[i].getMean()));
             System.out.println("Variance: " + df.format(runningTimeStatsPerTransaction[i].getVariance()));
             System.out.println("Standard Deviation: " + df.format(Math.sqrt(runningTimeStatsPerTransaction[i].getVariance())));
         }
-        System.out.println("-----------------------");
+        Logger.print().statement("-----------------------");
         System.out.println("Average Execution time");
         System.out.println("Mean: " + df.format(runningTimeStats.getMean()));
         System.out.println("Variance: " + df.format(runningTimeStats.getVariance()));
@@ -136,7 +139,7 @@ public class PerformanceRunner {
                 long txInterval = (long) (1.0 / loadEvolution.getLoad(counter) * 1000.0);
                 long waitTime = txInterval - txRunTime;
 
-                if (waitTime < 0) {
+                if (waitTime < 0 && counter > loadEvolution.getLoad(counter)*5) {
                     Logger.print().warning("System taking too long to respond. Cannot keep up load");
                     if (waitTime < - MAXDELAY) {
                         stop();
@@ -149,8 +152,9 @@ public class PerformanceRunner {
                 counter++;
 
 
-            } catch (InterruptedException e) {
-                System.out.print(e.getMessage());
+            } catch (Exception e) {
+                e.printStackTrace();
+                System.exit(1);
             }
 
         }
