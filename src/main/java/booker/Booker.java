@@ -5,6 +5,10 @@ import common.Logger;
 import common.NetworkAddress;
 import common.Resource;
 import middleware.Middleware;
+import performance.ConstantLoad;
+import performance.Increasing;
+import performance.LoadEvolution;
+import performance.PerformanceRunner;
 import resourceManager.EndpointRM;
 
 import java.rmi.AlreadyBoundException;
@@ -23,7 +27,8 @@ public class Booker {
         System.out.println("1. Client");
         System.out.println("2. Middleware");
         System.out.println("3. RM");
-        System.out.println("4. Exit");
+        System.out.println("4. Performance");
+        System.out.println("5. Exit");
         System.out.println();
         System.out.print("> ");
     }
@@ -39,6 +44,13 @@ public class Booker {
         System.out.print("> ");
     }
 
+    public static void printAvailablePerformanceAnalysisModes() {
+        System.out.println("Select performance analysis mode:");
+        System.out.println("1. Fixed load.");
+        System.out.println("2. Increasing load.");
+        System.out.print("> ");
+    }
+
     public static void startClient(NetworkAddress registry) throws RemoteException, NotBoundException {
         new Client(registry).startConsole();
     }
@@ -49,6 +61,10 @@ public class Booker {
 
     public static void startRM(NetworkAddress registry, Resource resource) throws AlreadyBoundException, RemoteException {
         new EndpointRM(registry, resource);
+    }
+
+    public static void startPerformanceAnalysis(NetworkAddress registry, LoadEvolution loadEvolution) throws RemoteException, NotBoundException {
+        new PerformanceRunner(registry, loadEvolution, 800, 0).start();
     }
 
     public static NetworkAddress configure() {
@@ -70,6 +86,24 @@ public class Booker {
         return new NetworkAddress(ip, port);
     }
 
+    public static LoadEvolution configurePerformanceAnalysis() {
+        Scanner scanner = new Scanner(System.in);
+        printAvailablePerformanceAnalysisModes();
+        int choice = scanner.nextInt();
+        switch (choice) {
+            case 1:
+                System.out.print("Target Load: ");
+                return new ConstantLoad(scanner.nextInt());
+            case 2:
+                System.out.print("Starting Load: ");
+                int startingLoad = scanner.nextInt();
+                System.out.print("Coefficient: ");
+                return new Increasing(startingLoad, scanner.nextDouble());
+            default:
+                return new ConstantLoad(5);
+        }
+    }
+
     public static Resource configureResource() {
         Scanner scanner = new Scanner(System.in);
         printAvailableResource();
@@ -84,8 +118,6 @@ public class Booker {
                 return Resource.FLIGHT;
             case 4:
                 return Resource.CAR;
-            case 5:
-                return null;
             default:
                 return null;
 
@@ -138,6 +170,10 @@ public class Booker {
                             ready = true;
                             break;
                         case 4:
+                            startPerformanceAnalysis(configure(), configurePerformanceAnalysis());
+                            ready =true;
+                            break;
+                        case 5:
                             System.exit(1);
                         default:
                             break;

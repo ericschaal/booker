@@ -1,5 +1,7 @@
 package common;
 
+import java.io.IOException;
+
 public class Logger {
 
     private static Logger instance = null;
@@ -68,6 +70,10 @@ public class Logger {
 
     public void statement(String message, String caller) {
         System.out.println(ANSI_PURPLE + "[" + caller + "] " + ANSI_GREEN + message + ANSI_RESET);
+    }
+
+    public void clear() {
+        System.out.print(String.format("\033[2J"));
     }
 
 
