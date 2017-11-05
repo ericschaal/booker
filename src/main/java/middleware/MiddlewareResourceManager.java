@@ -293,6 +293,10 @@ public class MiddlewareResourceManager implements TransactionalResourceManager {
     @Override
     public void shutdown() throws RemoteException {
         printRunTimeStats();
+        flightRM.shutdown();
+        carRM.shutdown();
+        customerRM.shutdown();
+        roomRM.shutdown();
     }
 
     public RemoteRevertibleResourceManager getCarRM() {

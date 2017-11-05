@@ -303,4 +303,8 @@ public class ResourceManager implements RemoteResourceManager {
         }
     }
 
+    @Override
+    public void shutdown() throws RemoteException {
+        rm.shutdown();
+    }
 }

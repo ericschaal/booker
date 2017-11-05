@@ -49,6 +49,7 @@ public class ResourceManagerImpl implements RemoteRevertibleResourceManager {
 
     // deletes the entire item
     private boolean deleteItem(int id, String key) {
+        long start = System.currentTimeMillis();
         Trace.info("RM::deleteItem(" + id + ", " + key + ") called");
         ReservableItem curObj = (ReservableItem) readData(id, key);
         // Check if there is such an item in the storage
@@ -59,6 +60,7 @@ public class ResourceManagerImpl implements RemoteRevertibleResourceManager {
             if (curObj.getReserved() == 0) {
                 removeData(id, curObj.getKey());
                 Trace.info("RM::deleteItem(" + id + ", " + key + ") item deleted");
+                RMStatistics.instance.getAverageExecutionTime().addValue(System.currentTimeMillis() - start);
                 return true;
             } else {
                 Trace.info("RM::deleteItem(" + id + ", " + key + ") item can't be deleted because some customers reserved it");
@@ -78,6 +80,7 @@ public class ResourceManagerImpl implements RemoteRevertibleResourceManager {
 
     // reserve an item
     private boolean reserveItem(int id, int customerID, String key, String location, int count) {
+        long start = System.currentTimeMillis();
         Trace.info("RM::reserveItem( " + id + ", customer=" + customerID + ", " + key + ", " + location + " ) called");
         // check if the item is available
         ReservableItem item = (ReservableItem) readData(id, key);
@@ -94,6 +97,7 @@ public class ResourceManagerImpl implements RemoteRevertibleResourceManager {
             item.setReserved(item.getReserved() + count);
 
             Trace.info("RM::reserveItem( " + id + ", " + customerID + ", " + key + ", " + location + ") succeeded");
+            RMStatistics.instance.getAverageExecutionTime().addValue(System.currentTimeMillis() - start);
             return true;
         }
     }
