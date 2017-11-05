@@ -67,6 +67,12 @@ public class ClientConsole
             return 21;
         else if (argument.compareToIgnoreCase("newcustomerid")==0)
             return 22;
+        else if (argument.compareToIgnoreCase("start") == 0)
+            return 23;
+        else if (argument.compareToIgnoreCase("commit") == 0)
+            return 24;
+        else if (argument.compareToIgnoreCase("abort") == 0)
+            return 25;
         else
             return 666;
 
@@ -81,6 +87,7 @@ public class ClientConsole
         System.out.println("deletecustomer\nqueryflight\nquerycar\nqueryroom\nquerycustomer");
         System.out.println("queryflightprice\nquerycarprice\nqueryroomprice");
         System.out.println("reserveflight\nreservecar\nreserveroom\nitinerary");
+        System.out.println("start\ncommit\nabort");
         System.out.println("nquit");
         System.out.println("\ntype help, <commandname> for detailed info(NOTE the use of comma).");
     }
@@ -266,6 +273,25 @@ public class ClientConsole
                 System.out.println("\nUsage:");
                 System.out.println("\tnewcustomerid, <id>, <customerid>");
                 break;
+            case 23:
+                System.out.println("Starts a new transaction");
+                System.out.println("Purpose:");
+                System.out.println("\tStarts a new atomic transaction. Must be committed or aborted");
+                System.out.println("\nUsage:");
+                System.out.println("\tstart");
+                break;
+            case 24:
+                System.out.println("Commits a transaction");
+                System.out.println("Purpose:");
+                System.out.println("\tCommits an atomic transaction. Must be inside a transaction");
+                System.out.println("\nUsage:");
+                System.out.println("\tcommit");
+            case 25:
+                System.out.println("Aborts a transaction");
+                System.out.println("Purpose:");
+                System.out.println("\tAborts an atomic transaction. Must be inside a transaction");
+                System.out.println("\nUsage:");
+                System.out.println("\tabort");
 
             default:
                 System.out.println(command);

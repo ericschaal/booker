@@ -540,6 +540,64 @@ public class Client {
                     }
                     break;
 
+
+                case 23: // start a new transaction
+                    if(arguments.size()!=1){
+                        obj.wrongNumber();
+                        break;
+                    }
+                    try {
+                        System.out.println("Starting a new transaction.");
+                        System.out.println("TxId: " + rm.startTx());
+                    } catch (Exception e ) {
+                        System.out.println("EXCEPTION:");
+                        System.out.println(e.getMessage());
+                        e.printStackTrace();
+                    }
+                    break;
+
+
+                case 24: // commits transaction
+                    if(arguments.size()!=2){
+                        obj.wrongNumber();
+                        break;
+                    }
+                    try {
+                        Id = obj.getInt(arguments.elementAt(1));
+                        System.out.println("Committing transaction with id: " + Id + ".");
+                        if (rm.commitTx(Id)) {
+                            System.out.println("Commit successful");
+                        } else {
+                            System.out.println("Failed to commit.");
+                        }
+                    } catch (Exception e ) {
+                        System.out.println("EXCEPTION:");
+                        System.out.println(e.getMessage());
+                        e.printStackTrace();
+                    }
+                    break;
+
+
+                case 25: // aborts transaction
+                    if(arguments.size()!=2){
+                        obj.wrongNumber();
+                        break;
+                    }
+                    try {
+                        Id = obj.getInt(arguments.elementAt(1));
+                        System.out.println("Aborting transaction with id: " + Id + ".");
+                        if (rm.abortTx(Id)) {
+                            System.out.println("Abort successful");
+                        } else {
+                            System.out.println("Failed to Abort.");
+                        }
+                    } catch (Exception e ) {
+                        System.out.println("EXCEPTION:");
+                        System.out.println(e.getMessage());
+                        e.printStackTrace();
+                    }
+                    break;
+
                 default:
                     System.out.println("The interface does not support this command.");
                     break;

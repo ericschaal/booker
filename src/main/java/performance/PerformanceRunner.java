@@ -6,7 +6,6 @@ import common.RMI;
 import common.TransactionalResourceManager;
 import org.apache.commons.math3.stat.descriptive.DescriptiveStatistics;
 
-import java.io.IOException;
 import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
@@ -21,14 +20,14 @@ import java.util.concurrent.TimeUnit;
 
 public class PerformanceRunner {
 
-    private static final int TXCOUNT = 7;
+    private static final int TXCOUNT = 8 + 1;
 
     private LoadEvolution loadEvolution;
     private int maxIterations;
     private long maxTime;
     private long finishTime;
 
-    private int MAXDELAY = 2000;
+    private int MAXDELAY = 13000; // must be higher than deadlock
     private int LOGGER_DISPLAY = 3000;
 
     private int counter = 1;
@@ -70,7 +69,7 @@ public class PerformanceRunner {
 
     }
 
-    private void printStats() {
+    private void printLocalStats() {
         Logger.print().statement("-----------------------STATISTICS-----------------------");
         System.out.println("-----------------------");
         System.out.println("Average Execution time per transaction number");
@@ -144,7 +143,7 @@ public class PerformanceRunner {
 
 
                 if (waitTime < 0 && counter > loadEvolution.getLoad(counter) * 5) {
-                    Logger.print().warning("Approaching client sending limit.");
+                    Logger.print().warning("Approaching client sending limit. Or Deadlock?");
                     if (waitTime < - MAXDELAY) {
                         stop();
                         return;
@@ -153,7 +152,7 @@ public class PerformanceRunner {
                 }
 
                 if (txRunTime > txInterval && counter > loadEvolution.getLoad(counter) * 5) {
-                    Logger.print().warning("Approaching system's max throughput.");
+                    Logger.print().warning("Approaching system's max throughput. Or Deadlock?");
                     if (txRunTime > MAXDELAY) {
                         stop();
                         return;
@@ -179,7 +178,7 @@ public class PerformanceRunner {
     public void stop() {
         triggerAverage.cancel();
         triggerAverage.purge();
-        printStats();
+        printLocalStats();
     }
 
 

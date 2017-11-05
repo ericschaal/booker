@@ -107,5 +107,7 @@ public interface RemoteResourceManager extends Remote {
     public boolean reserveRoom(int id, int customer, String locationd) throws RemoteException;
     /* reserve an itinerary */
     public boolean itinerary(int id, int customer, Vector flightNumbers, String location, boolean Car, boolean Room) throws RemoteException;
+
+    public void shutdown() throws RemoteException;
 }
 

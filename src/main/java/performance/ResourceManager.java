@@ -22,7 +22,7 @@ public class ResourceManager implements Serializable {
     }
 
     public int runRandom() throws RemoteException {
-        int choice = ThreadLocalRandom.current().nextInt(0, 6 + 1);
+        int choice = ThreadLocalRandom.current().nextInt(0, 8 + 1);
         switch (choice) {
             case 0:
                 tx0();
@@ -46,6 +46,12 @@ public class ResourceManager implements Serializable {
                 break;
             case 6:
                 tx6();
+                break;
+            case 7:
+                tx7();
+                break;
+            case 8:
+                tx8();
                 break;
             default:
                 throw new RuntimeException("Random number not in range!");
@@ -278,6 +284,53 @@ public class ResourceManager implements Serializable {
             return result.setResult(true);
         }));
     }
+
+    /**
+     * Queries a room
+     * Adds a 6 new room
+     * Involves a lock conversion.
+     * @throws RemoteException
+     */
+    private void tx7() throws RemoteException {
+        rm.runInTransaction(((rm1, txId, result, abort) -> {
+            String location1 = String.valueOf(idCounter++);
+            String location2 = String.valueOf(idCounter++);
+            String location3 = String.valueOf(idCounter++);
+            String location4 = String.valueOf(idCounter++);
+            String location5 = String.valueOf(idCounter++);
+            String location6 = String.valueOf(idCounter++);
+            rm1.queryRooms(txId, location1);
+            rm1.addRooms(txId, location1, 1, 10);
+            rm1.addRooms(txId, location2, 1, 10);
+            rm1.addRooms(txId, location3, 1, 10);
+            rm1.addRooms(txId, location4, 1, 10);
+            rm1.addRooms(txId, location5, 1, 10);
+            rm1.addRooms(txId, location6, 1, 10);
+
+            return result.setResult(true);
+        }));
+    }
+
+    /**
+     * Tries to delete everything.
+     * :)
+     */
+
+    private void tx8() throws RemoteException {
+        rm.runInTransaction(((rm1, txId, result, abort) -> {
+            while (!aliveCustomers.isEmpty()) {
+                rm1.deleteCustomer(txId, aliveCustomers.remove());
+            }
+            for (int i = 0; i < idCounter; i++) {
+                rm1.deleteCars(txId, String.valueOf(i));
+                rm1.deleteFlight(txId, i);
+                rm1.deleteRooms(txId, String.valueOf(i));
+            }
+            return result.setResult(true);
+        }));
+    }
+
+
 
 
 

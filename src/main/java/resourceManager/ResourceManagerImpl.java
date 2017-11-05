@@ -7,7 +7,6 @@ package resourceManager;
 import common.*;
 import common.hashtable.RMHashtable;
 import common.resource.*;
-
 import java.util.*;
 import java.rmi.RemoteException;
 
@@ -23,11 +22,17 @@ public class ResourceManagerImpl implements RemoteRevertibleResourceManager {
     }
 
     public boolean abortTransaction(int txId) throws RemoteException {
-        return history.abortTransaction(txId);
+        long start = System.currentTimeMillis();
+        boolean result = history.abortTransaction(txId);
+        RMStatistics.instance.getAverageAbortTime().addValue(System.currentTimeMillis() - start);
+        return result;
     }
 
     public boolean commitTransaction(int txId) throws RemoteException {
-        return history.commitTransaction(txId);
+        long start = System.currentTimeMillis();
+        boolean result = history.commitTransaction(txId);
+        RMStatistics.instance.getAverageCommitTime().addValue(System.currentTimeMillis() - start);
+        return result;
     }
 
 
@@ -427,5 +432,18 @@ public class ResourceManagerImpl implements RemoteRevertibleResourceManager {
     @Override
     public boolean freeRoom(int id, String location, int count) throws RemoteException {
         return freeRoom(id, Hotel.getKey(location), count);
+    }
+
+    private void printRuntimeStats() {
+        System.out.println("---- Statistics ----");
+        System.out.println("");
+        System.out.println("Average execution time: " + RMStatistics.instance.getAverageExecutionTime().getMean() + "ms");
+        System.out.println("Average commit time: " + RMStatistics.instance.getAverageCommitTime().getMean() + "ms");
+        System.out.println("Average abort time: " + RMStatistics.instance.getAverageAbortTime().getMean() + "ms");
+    }
+
+    @Override
+    public void shutdown() throws RemoteException {
+        printRuntimeStats();
     }
 }
