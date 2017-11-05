@@ -12,7 +12,7 @@ import kotlin.concurrent.timerTask
 class TxManager {
 
     private var concurrentRM: MiddlewareResourceManager
-    private var transactionCounter: Int = 0
+    @Volatile private var transactionCounter: Int = 0
     private var liveTransaction: HashMap<Int, Transaction> = HashMap()
     private var rm: MiddlewareResourceManager
 
@@ -99,7 +99,6 @@ class TxManager {
     }
 
 
-    @Synchronized
     fun transactionExists(txId: Int): Boolean {
         return liveTransaction.containsKey(txId)
     }

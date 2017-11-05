@@ -311,7 +311,7 @@ public class ResourceManager implements Serializable {
 
     private void tx8() throws RemoteException {
         rm.runInTransaction(((rm1, txId, result, abort) -> {
-            while (!aliveCustomers.isEmpty()) {
+            while (! aliveCustomers.isEmpty()) {
                 rm1.deleteCustomer(txId, aliveCustomers.remove());
             }
             for (int i = 0; i < idCounter; i++) {

@@ -5,6 +5,7 @@ import common.Logger;
 import common.NetworkAddress;
 import common.Resource;
 import middleware.Middleware;
+import middleware.MiddlewareConfig;
 import performance.*;
 import resourceManager.EndpointRM;
 
@@ -60,8 +61,8 @@ public class Booker {
         new Client(registry).startConsole();
     }
 
-    public static void startMiddleware(NetworkAddress registry) throws RemoteException, NotBoundException, AlreadyBoundException {
-        new Middleware(registry);
+    public static void startMiddleware(MiddlewareConfig config) throws RemoteException, NotBoundException, AlreadyBoundException {
+        new Middleware(config);
     }
 
     public static void startRM(NetworkAddress registry, Resource resource) throws AlreadyBoundException, RemoteException {
@@ -69,7 +70,7 @@ public class Booker {
     }
 
     public static void startPerformanceAnalysis(NetworkAddress registry, PerformanceConfiguration config) throws RemoteException, NotBoundException {
-        new PerformanceRunner(registry, config.getLoadEvolution(), 180, 0, config.isSingleRM(), config.isRandom()).start();
+        new PerformanceRunner(registry, config.getLoadEvolution(), 600, 0, config.isSingleRM(), config.isRandom()).start();
     }
 
     public static NetworkAddress configure() {
@@ -126,6 +127,7 @@ public class Booker {
 
     }
 
+
     public static Resource configureResource() {
         Scanner scanner = new Scanner(System.in);
         printAvailableResource();
@@ -162,6 +164,18 @@ public class Booker {
         }
     }
 
+    public static MiddlewareConfig parseMiddlewareConfig(String[] args) {
+        if (args.length != 6) throw new IllegalArgumentException("Invalid argument count");
+        else {
+            NetworkAddress bind = parseNetworkAddress(args[0]);
+            NetworkAddress car = parseNetworkAddress(args[2]);
+            NetworkAddress customer = parseNetworkAddress(args[3]);
+            NetworkAddress flight = parseNetworkAddress(args[4]);
+            NetworkAddress room = parseNetworkAddress(args[5]);
+            return new MiddlewareConfig(car, customer, flight, room, bind);
+        }
+    }
+
 
     public static void main(String[] args) {
         Scanner scanner = new Scanner(System.in);
@@ -182,7 +196,8 @@ public class Booker {
                             ready = true;
                             break;
                         case 2:
-                            startMiddleware(configure());
+                            //startMiddleware(configureMiddleware());
+                            System.out.println("Not implemented yet.");
                             ready = true;
                             break;
                         case 3:
@@ -209,7 +224,7 @@ public class Booker {
                         startClient(registryAddress);
                         break;
                     case "m":
-                        startMiddleware(registryAddress);
+                        startMiddleware(parseMiddlewareConfig(args));
                         break;
                     case "r":
                         if (args.length == 1) break;
