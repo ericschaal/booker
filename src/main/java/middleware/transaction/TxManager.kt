@@ -111,7 +111,7 @@ class TxManager {
         try {
 
             var result = body.apply(concurrentRM, transaction.id, TransactionResult(TransactionStatus.OK), {
-                transaction.abort()
+                abortTransaction(transaction)
                 throw TransactionAbortedException("Transaction aborted")
             })
 

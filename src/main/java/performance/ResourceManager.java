@@ -21,6 +21,16 @@ public class ResourceManager implements Serializable {
         this.rm = middlewareRM;
     }
 
+    public int runSingle() throws RemoteException {
+        tx6();
+        return 6;
+    }
+
+    public int runMultiple() throws RemoteException {
+        tx0();
+        return 0;
+    }
+
     public int runRandom() throws RemoteException {
         int choice = ThreadLocalRandom.current().nextInt(0, 8 + 1);
         switch (choice) {
@@ -59,6 +69,10 @@ public class ResourceManager implements Serializable {
         return choice;
     }
 
+    public void shutdown() throws RemoteException {
+        rm.shutdown();
+    }
+
     /**
      * Creates a customer and a flight
      * Reserves flight
@@ -76,7 +90,6 @@ public class ResourceManager implements Serializable {
 
             int flightId = idCounter++;
             String location1 = String.valueOf(idCounter++);
-            String location2 = String.valueOf(idCounter++);
 
             if (!rm1.addFlight(txId, flightId, 20, 500))
                 abort.invoke();
@@ -85,12 +98,12 @@ public class ResourceManager implements Serializable {
 
             if (!rm1.addCars(txId, location1, 12, 50))
                 abort.invoke();
-            if (!rm1.reserveCar(txId, cid, location2))
+            if (!rm1.reserveCar(txId, cid, location1))
                 abort.invoke();
 
             if (!rm1.addRooms(txId, location1, 12, 50))
                 abort.invoke();
-            if (!rm1.reserveRoom(txId, cid, location2))
+            if (!rm1.reserveRoom(txId, cid, location1))
                 abort.invoke();
 
 
@@ -240,7 +253,7 @@ public class ResourceManager implements Serializable {
     }
 
     /**
-     * Creates 10 rooms;
+     * Creates 3 rooms;
      * ONE RM INVOLVED
      * @throws RemoteException
      */
@@ -250,13 +263,6 @@ public class ResourceManager implements Serializable {
             String location1 = String.valueOf(idCounter++);
             String location2 = String.valueOf(idCounter++);
             String location3 = String.valueOf(idCounter++);
-            String location4 = String.valueOf(idCounter++);
-            String location5 = String.valueOf(idCounter++);
-            String location6 = String.valueOf(idCounter++);
-            String location7 = String.valueOf(idCounter++);
-            String location8 = String.valueOf(idCounter++);
-            String location9 = String.valueOf(idCounter++);
-            String location10 = String.valueOf(idCounter++);
 
 
             if (!rm1.addCars(txId, location1, 12, 50))
@@ -264,20 +270,6 @@ public class ResourceManager implements Serializable {
             if (!rm1.addCars(txId, location2, 12, 50))
                 abort.invoke();
             if (!rm1.addCars(txId, location3, 12, 50))
-                abort.invoke();
-            if (!rm1.addCars(txId, location4, 12, 50))
-                abort.invoke();
-            if (!rm1.addCars(txId, location5, 12, 50))
-                abort.invoke();
-            if (!rm1.addCars(txId, location6, 12, 50))
-                abort.invoke();
-            if (!rm1.addCars(txId, location7, 12, 50))
-                abort.invoke();
-            if (!rm1.addCars(txId, location8, 12, 50))
-                abort.invoke();
-            if (!rm1.addCars(txId, location9, 12, 50))
-                abort.invoke();
-            if (!rm1.addCars(txId, location10, 12, 50))
                 abort.invoke();
 
 
@@ -289,6 +281,7 @@ public class ResourceManager implements Serializable {
      * Queries a room
      * Adds a 6 new room
      * Involves a lock conversion.
+     * Involves 1 RM!
      * @throws RemoteException
      */
     private void tx7() throws RemoteException {
@@ -329,6 +322,8 @@ public class ResourceManager implements Serializable {
             return result.setResult(true);
         }));
     }
+
+
 
 
 

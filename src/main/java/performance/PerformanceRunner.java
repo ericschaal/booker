@@ -26,6 +26,8 @@ public class PerformanceRunner {
     private int maxIterations;
     private long maxTime;
     private long finishTime;
+    private boolean oneRM;
+    private boolean random;
 
     private int MAXDELAY = 13000; // must be higher than deadlock
     private int LOGGER_DISPLAY = 3000;
@@ -45,11 +47,14 @@ public class PerformanceRunner {
 
     private ResourceManager rm;
 
-    public PerformanceRunner(NetworkAddress registryAddress, LoadEvolution loadEvolution, long maxTimeSeconds, int maxIterations) throws RemoteException, NotBoundException {
+    public PerformanceRunner(NetworkAddress registryAddress, LoadEvolution loadEvolution, long maxTimeSeconds, int maxIterations, boolean singleRM, boolean random) throws RemoteException, NotBoundException {
         this.loadEvolution = loadEvolution;
         this.maxIterations = maxIterations;
         this.maxTime = maxTimeSeconds;
         triggerAverage = new Timer();
+
+        this.random = random;
+        this.oneRM = singleRM;
 
         Registry registry = LocateRegistry.getRegistry(registryAddress.getIp(), registryAddress.getPort());
         TransactionalResourceManager resourceManager = (TransactionalResourceManager) registry.lookup(RMI.MIDDLEWARE);
@@ -130,7 +135,17 @@ public class PerformanceRunner {
 
 
                 startTxTime = System.currentTimeMillis();
-                int txNumber = rm.runRandom();
+
+                int txNumber;
+                
+                if (oneRM) {
+                    txNumber = rm.runSingle();
+                } else if (random) {
+                    txNumber = rm.runRandom();
+                } else {
+                    txNumber = rm.runMultiple();
+                }
+
                 txRunTime = System.currentTimeMillis() - startTxTime;
 
                 txCountSinceLastrigger++;
@@ -176,9 +191,14 @@ public class PerformanceRunner {
     }
 
     public void stop() {
-        triggerAverage.cancel();
-        triggerAverage.purge();
-        printLocalStats();
+        try {
+            triggerAverage.cancel();
+            triggerAverage.purge();
+            printLocalStats();
+            rm.shutdown();
+        } catch (RemoteException e) {
+            e.printStackTrace();
+        }
     }
 
 

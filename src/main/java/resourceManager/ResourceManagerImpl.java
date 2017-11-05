@@ -70,11 +70,13 @@ public class ResourceManagerImpl implements RemoteRevertibleResourceManager {
     }
 
     private boolean freeItem(int id, String key, int count) {
+        long start = System.currentTimeMillis();
         Trace.info("RM::freeItem( " + id + ", " + key + ", " +count+") called" );
         ReservableItem item  = (ReservableItem) readData(id, key);
         if (item.getReserved()-count < 0) return false;
         item.setReserved(item.getReserved()-count);
         item.setCount(item.getCount()+count);
+        RMStatistics.instance.getAverageExecutionTime().addValue(System.currentTimeMillis() - start);
         return true;
     }
 
@@ -105,6 +107,7 @@ public class ResourceManagerImpl implements RemoteRevertibleResourceManager {
 
     // query the number of available seats/rooms/cars
     private int queryNum(int id, String key) {
+        long start = System.currentTimeMillis();
         Trace.info("RM::queryNum(" + id + ", " + key + ") called");
         ReservableItem curObj = (ReservableItem) readData(id, key);
         int value = 0;
@@ -112,11 +115,13 @@ public class ResourceManagerImpl implements RemoteRevertibleResourceManager {
             value = curObj.getCount();
         } // else
         Trace.info("RM::queryNum(" + id + ", " + key + ") returns count=" + value);
+        RMStatistics.instance.getAverageExecutionTime().addValue(System.currentTimeMillis() - start);
         return value;
     }
 
     // query the price of an item
     private int queryPrice(int id, String key) {
+        long start = System.currentTimeMillis();
         Trace.info("RM::queryCarsPrice(" + id + ", " + key + ") called");
         ReservableItem curObj = (ReservableItem) readData(id, key);
         int value = 0;
@@ -124,6 +129,7 @@ public class ResourceManagerImpl implements RemoteRevertibleResourceManager {
             value = curObj.getPrice();
         } // else
         Trace.info("RM::queryCarsPrice(" + id + ", " + key + ") returns cost=$" + value);
+        RMStatistics.instance.getAverageExecutionTime().addValue(System.currentTimeMillis() - start);
         return value;
     }
 
