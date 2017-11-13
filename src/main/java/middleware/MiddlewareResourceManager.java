@@ -8,6 +8,8 @@ import kotlin.jvm.functions.Function0;
 
 import java.rmi.RemoteException;
 import java.util.Enumeration;
+import java.util.Timer;
+import java.util.TimerTask;
 import java.util.Vector;
 
 import middleware.lockManager.DeadlockException;
@@ -293,10 +295,19 @@ public class MiddlewareResourceManager implements TransactionalResourceManager {
     @Override
     public void shutdown() throws RemoteException {
         printRunTimeStats();
+
         flightRM.shutdown();
         carRM.shutdown();
         customerRM.shutdown();
         roomRM.shutdown();
+
+        Timer timedShutdown = new Timer();
+        timedShutdown.schedule(new TimerTask() {
+            @Override
+            public void run() {
+                System.exit(0);
+            }
+        }, 2000);
     }
 
     public RemoteRevertibleResourceManager getCarRM() {

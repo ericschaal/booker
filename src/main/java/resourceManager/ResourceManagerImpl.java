@@ -473,5 +473,12 @@ public class ResourceManagerImpl implements RemoteRevertibleResourceManager {
     @Override
     public void shutdown() throws RemoteException {
         printRuntimeStats();
+        Timer timedShutdown = new Timer();
+        timedShutdown.schedule(new TimerTask() {
+            @Override
+            public void run() {
+                System.exit(0);
+            }
+        }, 2000);
     }
 }
