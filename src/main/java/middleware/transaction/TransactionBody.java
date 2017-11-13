@@ -8,5 +8,5 @@ import java.rmi.RemoteException;
 
 @FunctionalInterface
 public interface TransactionBody<A, B, C, D, E> extends Serializable {
-    E apply(A rm, B txId, C result, D abort) throws DeadlockException, RemoteException, TransactionAbortedException;
+    E apply(A rm, B txId, C result, D abort) throws DeadlockException, RemoteException, TransactionAbortedException, InvalidTransactionException;
 }

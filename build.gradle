@@ -1,6 +1,7 @@
 
 buildscript {
     ext.kotlin_version = '1.1.51'
+    ext.aspectjVersion = '1.8.4'
 
     repositories {
         mavenCentral()
@@ -12,8 +13,8 @@ buildscript {
 
 plugins {
     id "us.kirchmeier.capsule" version "1.0.2"
-
 }
+
 
 apply plugin: 'java'
 apply plugin: 'kotlin'

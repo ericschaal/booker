@@ -5,10 +5,8 @@ import common.Logger;
 import common.NetworkAddress;
 import common.Resource;
 import middleware.Middleware;
-import performance.ConstantLoad;
-import performance.Increasing;
-import performance.LoadEvolution;
-import performance.PerformanceRunner;
+import middleware.MiddlewareConfig;
+import performance.*;
 import resourceManager.EndpointRM;
 
 import java.rmi.AlreadyBoundException;
@@ -44,10 +42,18 @@ public class Booker {
         System.out.print("> ");
     }
 
-    public static void printAvailablePerformanceAnalysisModes() {
-        System.out.println("Select performance analysis mode:");
+    public static void printAvailablePerformanceAnalysisLoadModes() {
+        System.out.println("Select performance analysis load mode:");
         System.out.println("1. Fixed load.");
         System.out.println("2. Increasing load.");
+        System.out.print("> ");
+    }
+
+    public static void printAvailablePerformanceAnalysisMode() {
+        System.out.println("Select performance analysis mode:");
+        System.out.println("1. One RM.");
+        System.out.println("2. Multiple RM");
+        System.out.println("3. Random");
         System.out.print("> ");
     }
 
@@ -55,16 +61,16 @@ public class Booker {
         new Client(registry).startConsole();
     }
 
-    public static void startMiddleware(NetworkAddress registry) throws RemoteException, NotBoundException, AlreadyBoundException {
-        new Middleware(registry);
+    public static void startMiddleware(MiddlewareConfig config) throws RemoteException, NotBoundException, AlreadyBoundException {
+        new Middleware(config);
     }
 
     public static void startRM(NetworkAddress registry, Resource resource) throws AlreadyBoundException, RemoteException {
         new EndpointRM(registry, resource);
     }
 
-    public static void startPerformanceAnalysis(NetworkAddress registry, LoadEvolution loadEvolution) throws RemoteException, NotBoundException {
-        new PerformanceRunner(registry, loadEvolution, 600, 0).start();
+    public static void startPerformanceAnalysis(NetworkAddress registry, PerformanceConfiguration config) throws RemoteException, NotBoundException {
+        new PerformanceRunner(registry, config.getLoadEvolution(), 600, 0, config.isSingleRM(), config.isRandom()).start();
     }
 
     public static NetworkAddress configure() {
@@ -86,23 +92,41 @@ public class Booker {
         return new NetworkAddress(ip, port);
     }
 
-    public static LoadEvolution configurePerformanceAnalysis() {
+    public static PerformanceConfiguration configurePerformanceAnalysis() {
         Scanner scanner = new Scanner(System.in);
-        printAvailablePerformanceAnalysisModes();
+        printAvailablePerformanceAnalysisLoadModes();
         int choice = scanner.nextInt();
+        LoadEvolution le;
         switch (choice) {
             case 1:
                 System.out.print("Target Load: ");
-                return new ConstantLoad(scanner.nextInt());
+                le = new ConstantLoad(scanner.nextInt());
+                break;
             case 2:
                 System.out.print("Starting Load: ");
                 int startingLoad = scanner.nextInt();
                 System.out.print("Coefficient: ");
-                return new Increasing(startingLoad, scanner.nextDouble());
+                le =  new Increasing(startingLoad, scanner.nextDouble());
+                break;
             default:
-                return new ConstantLoad(5);
+                le =  new ConstantLoad(5);
+                break;
         }
+        printAvailablePerformanceAnalysisMode();
+        choice = scanner.nextInt();
+        switch (choice) {
+            case 1:
+                return new PerformanceConfiguration(le, true, false);
+            case 2:
+                return new PerformanceConfiguration(le, false, false);
+            case 3:
+                return new PerformanceConfiguration(le, false, true);
+            default:
+                return new PerformanceConfiguration(le, false, true);
+        }
+
     }
+
 
     public static Resource configureResource() {
         Scanner scanner = new Scanner(System.in);
@@ -140,6 +164,18 @@ public class Booker {
         }
     }
 
+    public static MiddlewareConfig parseMiddlewareConfig(String[] args) {
+        if (args.length != 6) throw new IllegalArgumentException("Invalid argument count");
+        else {
+            NetworkAddress bind = parseNetworkAddress(args[0]);
+            NetworkAddress car = parseNetworkAddress(args[2]);
+            NetworkAddress customer = parseNetworkAddress(args[3]);
+            NetworkAddress flight = parseNetworkAddress(args[4]);
+            NetworkAddress room = parseNetworkAddress(args[5]);
+            return new MiddlewareConfig(car, customer, flight, room, bind);
+        }
+    }
+
 
     public static void main(String[] args) {
         Scanner scanner = new Scanner(System.in);
@@ -160,7 +196,8 @@ public class Booker {
                             ready = true;
                             break;
                         case 2:
-                            startMiddleware(configure());
+                            //startMiddleware(configureMiddleware());
+                            System.out.println("Not implemented yet.");
                             ready = true;
                             break;
                         case 3:
@@ -187,7 +224,7 @@ public class Booker {
                         startClient(registryAddress);
                         break;
                     case "m":
-                        startMiddleware(registryAddress);
+                        startMiddleware(parseMiddlewareConfig(args));
                         break;
                     case "r":
                         if (args.length == 1) break;

@@ -16,13 +16,10 @@ class Transaction : Serializable {
     private var timer: Timer
 
 
-    constructor(txId: Int, ttl: Long) {
+    constructor(txId: Int, timerTask: TimerTask, ttl: Long) {
         id = txId
         timer = Timer()
-        timer.schedule(timerTask {
-            Logger.print().info("Timeout", "Transaction:" + id)
-            abort()
-        }, ttl)
+        timer.schedule(timerTask, ttl)
         Logger.print().info("Alive", "Transaction:" + id)
     }
 

@@ -17,7 +17,7 @@ public class EndpointRM {
             System.setSecurityManager(new SecurityManager());
         }
 
-        Registry registry = LocateRegistry.getRegistry(registryAddress.getIp(), registryAddress.getPort());
+        Registry registry = LocateRegistry.getRegistry("localhost", registryAddress.getPort());
 
         ResourceManagerImpl obj = new ResourceManagerImpl();
 

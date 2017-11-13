@@ -3,6 +3,9 @@ package client;
 import common.Logger;
 import common.RemoteResourceManager;
 import common.TransactionalResourceManager;
+import middleware.lockManager.DeadlockException;
+import middleware.transaction.InvalidTransactionException;
+import middleware.transaction.TransactionAbortedException;
 import middleware.transaction.TransactionResult;
 import middleware.transaction.TransactionStatus;
 
@@ -11,65 +14,91 @@ import java.rmi.RemoteException;
 import java.util.Vector;
 
 public class ResourceManager implements RemoteResourceManager {
-    
+
     private final TransactionalResourceManager rm;
 
     public ResourceManager(TransactionalResourceManager rm) {
         this.rm = rm;
     }
 
+    public int startTx() throws RemoteException {
+        return rm.newTransaction();
+    }
+
+    public boolean commitTx(int txId) throws RemoteException, InvalidTransactionException {
+        try {
+            rm.commitTransaction(txId);
+            Logger.print().info("Transaction " + txId + " committed", "ResourceManager");
+            return true;
+        } catch (InvalidTransactionException e) {
+            Logger.print().error("Not a valid transaction. Start a transaction before committing.", "ResourceManager");
+            return false;
+        } catch (TransactionAbortedException e) {
+            Logger.print().error("Transaction " + txId + " aborted", "ResourceManager");
+            return false;
+        }
+    }
+
+    public boolean abortTx(int txId) throws RemoteException, InvalidTransactionException {
+        try {
+            rm.abortTransaction(txId);
+            Logger.print().info("Transaction " + txId + " aborted", "ResourceManager");
+            return true;
+        } catch (InvalidTransactionException e) {
+            Logger.print().error("Not a valid transaction. Start a transaction before aborting.");
+            return false;
+        }
+    }
+
     @Override
     public boolean addFlight(int id, int flightNum, int flightSeats, int flightPrice) throws RemoteException {
-        TransactionResult transactionResult = rm.runInTransaction(
-                (resourceManager, txId, result, abort) -> result.setResult(resourceManager.addFlight(txId, flightNum, flightSeats, flightPrice))
-        );
-
-        if (transactionResult.getStatus() == TransactionStatus.OK) {
-            return transactionResult.getBooleanResult();
-        } else {
-            Logger.print().warning("Transaction aborted");
+        try {
+            return rm.addFlight(id, flightNum, flightSeats, flightPrice);
+        } catch (DeadlockException e) {
+            Logger.print().warning("Deadlock.");
+            return false;
+        } catch (InvalidTransactionException e) {
+            Logger.print().error(e.getMessage());
             return false;
         }
     }
 
     @Override
     public boolean addCars(int id, String location, int numCars, int price) throws RemoteException {
-        TransactionResult transactionResult = rm.runInTransaction(
-                (resourceManager, txId, result, abort) -> result.setResult(resourceManager.addCars(txId, location, numCars, price))
-        );
-
-        if (transactionResult.getStatus() == TransactionStatus.OK) {
-            return transactionResult.getBooleanResult();
-        } else {
-            Logger.print().warning("Transaction aborted");
+        try {
+            return rm.addCars(id, location, numCars, price);
+        } catch (DeadlockException e) {
+            Logger.print().warning("Deadlock.");
+            return false;
+        } catch (InvalidTransactionException e) {
+            Logger.print().error(e.getMessage());
             return false;
         }
     }
 
     @Override
     public boolean addRooms(int id, String location, int numRooms, int price) throws RemoteException {
-        TransactionResult transactionResult = rm.runInTransaction(
-                (resourceManager, txId, result, abort) -> result.setResult(resourceManager.addRooms(txId, location, numRooms, price))
-        );
-
-        if (transactionResult.getStatus() == TransactionStatus.OK) {
-            return transactionResult.getBooleanResult();
-        } else {
-            Logger.print().warning("Transaction aborted");
+        try {
+            return rm.addRooms(id, location, numRooms, price);
+        } catch (DeadlockException e) {
+            Logger.print().warning("Deadlock.");
+            return false;
+        } catch (InvalidTransactionException e) {
+            Logger.print().error(e.getMessage());
             return false;
         }
     }
 
     @Override
     public int newCustomer(int id) throws RemoteException {
-        TransactionResult transactionResult = rm.runInTransaction(
-                (resourceManager, txId, result, abort) -> result.setResult(resourceManager.newCustomer(txId))
-        );
-        if (transactionResult.getStatus() == TransactionStatus.OK) {
-            return transactionResult.getIntResult();
-        } else {
-            Logger.print().warning("Transaction aborted");
-            return 0;
+        try {
+            return rm.newCustomer(id);
+        } catch (DeadlockException e) {
+            Logger.print().warning("Deadlock.");
+            return -1;
+        } catch (InvalidTransactionException e) {
+            Logger.print().error(e.getMessage());
+            return -1;
         }
     }
 
@@ -81,233 +110,201 @@ public class ResourceManager implements RemoteResourceManager {
 
     @Override
     public boolean deleteFlight(int id, int flightNum) throws RemoteException {
-        TransactionResult transactionResult = rm.runInTransaction(
-                (resourceManager, txId, result, abort) -> result.setResult(resourceManager.deleteFlight(txId, flightNum))
-        );
-        if (transactionResult.getStatus() == TransactionStatus.OK) {
-            return transactionResult.getBooleanResult();
-        } else {
-            Logger.print().warning("Transaction aborted");
+        try {
+            return rm.deleteFlight(id, flightNum);
+        } catch (DeadlockException e) {
+            Logger.print().warning("Deadlock.");
+            return false;
+        } catch (InvalidTransactionException e) {
+            Logger.print().error(e.getMessage());
             return false;
         }
     }
 
     @Override
     public boolean deleteCars(int id, String location) throws RemoteException {
-        TransactionResult transactionResult = rm.runInTransaction(
-                (resourceManager, txId, result, abort) -> result.setResult(resourceManager.deleteCars(txId, location))
-        );
-        if (transactionResult.getStatus() == TransactionStatus.OK) {
-            return transactionResult.getBooleanResult();
-        } else {
-            Logger.print().warning("Transaction aborted");
+        try {
+            return rm.deleteCars(id, location);
+        } catch (DeadlockException e) {
+            Logger.print().warning("Deadlock.");
+            return false;
+        } catch (InvalidTransactionException e) {
+            Logger.print().error(e.getMessage());
             return false;
         }
     }
 
     @Override
     public boolean deleteRooms(int id, String location) throws RemoteException {
-        TransactionResult transactionResult = rm.runInTransaction(
-                (resourceManager, txId, result, abort) -> result.setResult(resourceManager.deleteRooms(txId, location))
-        );
-        if (transactionResult.getStatus() == TransactionStatus.OK) {
-            return transactionResult.getBooleanResult();
-        } else {
-            Logger.print().warning("Transaction aborted");
+        try {
+            return rm.deleteRooms(id, location);
+        } catch (DeadlockException e) {
+            Logger.print().warning("Deadlock.");
+            return false;
+        } catch (InvalidTransactionException e) {
+            Logger.print().error(e.getMessage());
             return false;
         }
     }
 
     @Override
     public boolean deleteCustomer(int id, int customer) throws RemoteException {
-        TransactionResult transactionResult = rm.runInTransaction(
-                (resourceManager, txId, result, abort) -> {
-                    boolean opResult = resourceManager.deleteCustomer(txId, customer);
-                    if (!opResult)
-                        abort.invoke();
-
-                    return result.setResult(opResult);
-                }
-        );
-        if (transactionResult.getStatus() == TransactionStatus.OK) {
-            return transactionResult.getBooleanResult();
-        } else {
-            Logger.print().warning("Transaction aborted");
+        try {
+            return rm.deleteCustomer(id, customer);
+        } catch (DeadlockException e) {
+            Logger.print().warning("Deadlock.");
+            return false;
+        } catch (InvalidTransactionException e) {
+            Logger.print().error(e.getMessage());
             return false;
         }
     }
 
     @Override
     public int queryFlight(int id, int flightNumber) throws RemoteException {
-        TransactionResult transactionResult = rm.runInTransaction(
-                (resourceManager, txId, result, abort) -> result.setResult(resourceManager.queryFlight(txId, flightNumber))
-        );
-        if (transactionResult.getStatus() == TransactionStatus.OK) {
-            return transactionResult.getIntResult();
-        } else {
-            Logger.print().warning("Transaction aborted");
+        try {
+            return rm.queryFlight(id, flightNumber);
+        } catch (DeadlockException e) {
+            Logger.print().warning("Deadlock.");
+            return 0;
+        } catch (InvalidTransactionException e) {
+            Logger.print().error(e.getMessage());
             return 0;
         }
     }
 
     @Override
     public int queryCars(int id, String location) throws RemoteException {
-        TransactionResult transactionResult = rm.runInTransaction(
-                (resourceManager, txId, result, abort) -> result.setResult(resourceManager.queryCars(txId, location))
-        );
-        if (transactionResult.getStatus() == TransactionStatus.OK) {
-            return transactionResult.getIntResult();
-        } else {
-            Logger.print().warning("Transaction aborted");
+        try {
+            return rm.queryCars(id, location);
+        } catch (DeadlockException e) {
+            Logger.print().warning("Deadlock.");
+            return 0;
+        } catch (InvalidTransactionException e) {
+            Logger.print().error(e.getMessage());
             return 0;
         }
     }
 
     @Override
     public int queryRooms(int id, String location) throws RemoteException {
-        TransactionResult transactionResult = rm.runInTransaction(
-                (resourceManager, txId, result, abort) -> result.setResult(resourceManager.queryRooms(txId, location))
-        );
-        if (transactionResult.getStatus() == TransactionStatus.OK) {
-            return transactionResult.getIntResult();
-        } else {
-            Logger.print().warning("Transaction aborted");
+        try {
+            return rm.queryRooms(id, location);
+        } catch (DeadlockException e) {
+            Logger.print().warning("Deadlock.");
+            return 0;
+        } catch (InvalidTransactionException e) {
+            Logger.print().error(e.getMessage());
             return 0;
         }
     }
 
     @Override
     public String queryCustomerInfo(int id, int customer) throws RemoteException {
-        TransactionResult transactionResult = rm.runInTransaction(
-                (resourceManager, txId, result, abort) -> result.setResult(resourceManager.queryCustomerInfo(txId, customer))
-        );
-        if (transactionResult.getStatus() == TransactionStatus.OK) {
-            return transactionResult.getStringResult();
-        } else {
-            Logger.print().warning("Transaction aborted");
+        try {
+            return rm.queryCustomerInfo(id, customer);
+        } catch (DeadlockException e) {
+            Logger.print().warning("Deadlock.");
+            return "";
+        } catch (InvalidTransactionException e) {
+            Logger.print().error(e.getMessage());
             return "";
         }
     }
 
     @Override
     public int queryFlightPrice(int id, int flightNumber) throws RemoteException {
-        TransactionResult transactionResult = rm.runInTransaction(
-                (resourceManager, txId, result, abort) -> result.setResult(resourceManager.queryFlightPrice(txId, flightNumber))
-        );
-        if (transactionResult.getStatus() == TransactionStatus.OK) {
-            return transactionResult.getIntResult();
-        } else {
-            Logger.print().warning("Transaction aborted");
+        try {
+            return rm.queryFlightPrice(id, flightNumber);
+        } catch (DeadlockException e) {
+            Logger.print().warning("Deadlock.");
+            return 0;
+        } catch (InvalidTransactionException e) {
+            Logger.print().error(e.getMessage());
             return 0;
         }
     }
 
     @Override
     public int queryCarsPrice(int id, String location) throws RemoteException {
-        TransactionResult transactionResult = rm.runInTransaction(
-                (resourceManager, txId, result, abort) -> result.setResult(resourceManager.queryCarsPrice(txId, location))
-        );
-        if (transactionResult.getStatus() == TransactionStatus.OK) {
-            return transactionResult.getIntResult();
-        } else {
-            Logger.print().warning("Transaction aborted");
+        try {
+            return rm.queryCarsPrice(id, location);
+        } catch (DeadlockException e) {
+            Logger.print().warning("Deadlock.");
+            return 0;
+        } catch (InvalidTransactionException e) {
+            Logger.print().error(e.getMessage());
             return 0;
         }
     }
 
     @Override
     public int queryRoomsPrice(int id, String location) throws RemoteException {
-        TransactionResult transactionResult = rm.runInTransaction(
-                (resourceManager, txId, result, abort) -> result.setResult(resourceManager.queryRoomsPrice(txId, location))
-        );
-        if (transactionResult.getStatus() == TransactionStatus.OK) {
-            return transactionResult.getIntResult();
-        } else {
-            Logger.print().warning("Transaction aborted");
+        try {
+            return rm.queryRoomsPrice(id, location);
+        } catch (DeadlockException e) {
+            Logger.print().warning("Deadlock.");
+            return 0;
+        } catch (InvalidTransactionException e) {
+            Logger.print().error(e.getMessage());
             return 0;
         }
     }
 
     @Override
     public boolean reserveFlight(int id, int customer, int flightNumber) throws RemoteException {
-        TransactionResult transactionResult = rm.runInTransaction(
-                (resourceManager, txId, result, abort) -> result.setResult(resourceManager.reserveFlight(txId, customer, flightNumber))
-        );
-        if (transactionResult.getStatus() == TransactionStatus.OK) {
-            return transactionResult.getBooleanResult();
-        } else {
-            Logger.print().warning("Transaction aborted");
+        try {
+            return rm.reserveFlight(id, customer, flightNumber);
+        } catch (DeadlockException e) {
+            Logger.print().warning("Deadlock.");
+            return false;
+        } catch (InvalidTransactionException e) {
+            Logger.print().error(e.getMessage());
             return false;
         }
     }
 
     @Override
     public boolean reserveCar(int id, int customer, String location) throws RemoteException {
-        TransactionResult transactionResult = rm.runInTransaction(
-                (resourceManager, txId, result, abort) -> result.setResult(resourceManager.reserveCar(txId, customer, location))
-        );
-        if (transactionResult.getStatus() == TransactionStatus.OK) {
-            return transactionResult.getBooleanResult();
-        } else {
-            Logger.print().warning("Transaction aborted");
+        try {
+            return rm.reserveCar(id, customer, location);
+        } catch (DeadlockException e) {
+            Logger.print().warning("Deadlock.");
+            return false;
+        } catch (InvalidTransactionException e) {
+            Logger.print().error(e.getMessage());
             return false;
         }
     }
 
     @Override
     public boolean reserveRoom(int id, int customer, String location) throws RemoteException {
-        TransactionResult transactionResult = rm.runInTransaction(
-                (resourceManager, txId, result, abort) -> result.setResult(resourceManager.reserveRoom(txId, customer, location))
-        );
-        if (transactionResult.getStatus() == TransactionStatus.OK) {
-            return transactionResult.getBooleanResult();
-        } else {
-            Logger.print().warning("Transaction aborted");
+        try {
+            return rm.reserveRoom(id, customer, location);
+        } catch (DeadlockException e) {
+            Logger.print().warning("Deadlock.");
+            return false;
+        } catch (InvalidTransactionException e) {
+            Logger.print().error(e.getMessage());
             return false;
         }
     }
 
     @Override
     public boolean itinerary(int id, int customer, Vector flightNumbers, String location, boolean Car, boolean Room) throws RemoteException {
-        TransactionResult transactionResult = rm.runInTransaction(
-                (resourceManager, txId, result, abort) -> {
-//                    if (true /*TODO check customer */) {
-//                        for (String rawFlightNumber : (Vector<String>) flightNumbers) {
-//                            int flightNumber = Integer.valueOf(rawFlightNumber);
-//                            if (!resourceManager.reserveFlight(txId, customer, flightNumber))
-//                                abort.invoke();
-//                        }
-//                        if (Car) {
-//                            if (!resourceManager.reserveCar(txId, customer, location))
-//                                abort.invoke();
-//                        }
-//                        if (Room) {
-//                            if (!resourceManager.reserveRoom(txId, customer, location))
-//                                abort.invoke();
-//                        }
-//
-//                        //TODO add reservations to customer
-//
-//                        return result.setResult(true);
-//                    } else
-//                        abort.invoke();
-//
-//                    return result.setResult(false);
-
-                    boolean opResult = resourceManager.itinerary(txId, customer, flightNumbers, location, Car, Room);
-                    if (!opResult)
-                        abort.invoke();
-
-                    return result.setResult(opResult);
-
-                }
-        );
-        if (transactionResult.getStatus() == TransactionStatus.OK) {
-            return transactionResult.getBooleanResult();
-        } else {
-            Logger.print().warning("Transaction aborted");
+        try {
+            return rm.itinerary(id, customer, flightNumbers, location, Car, Room);
+        } catch (DeadlockException e) {
+            Logger.print().warning("Deadlock.");
+            return false;
+        } catch (InvalidTransactionException e) {
+            Logger.print().error(e.getMessage());
             return false;
         }
     }
 
+    @Override
+    public void shutdown() throws RemoteException {
+        rm.shutdown();
+    }
 }

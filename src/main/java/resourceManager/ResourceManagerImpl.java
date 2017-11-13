@@ -7,7 +7,6 @@ package resourceManager;
 import common.*;
 import common.hashtable.RMHashtable;
 import common.resource.*;
-
 import java.util.*;
 import java.rmi.RemoteException;
 
@@ -23,11 +22,17 @@ public class ResourceManagerImpl implements RemoteRevertibleResourceManager {
     }
 
     public boolean abortTransaction(int txId) throws RemoteException {
-        return history.abortTransaction(txId);
+        long start = System.currentTimeMillis();
+        boolean result = history.abortTransaction(txId);
+        RMStatistics.instance.getAverageAbortTime().addValue(System.currentTimeMillis() - start);
+        return result;
     }
 
     public boolean commitTransaction(int txId) throws RemoteException {
-        return history.commitTransaction(txId);
+        long start = System.currentTimeMillis();
+        boolean result = history.commitTransaction(txId);
+        RMStatistics.instance.getAverageCommitTime().addValue(System.currentTimeMillis() - start);
+        return result;
     }
 
 
@@ -44,6 +49,7 @@ public class ResourceManagerImpl implements RemoteRevertibleResourceManager {
 
     // deletes the entire item
     private boolean deleteItem(int id, String key) {
+        long start = System.currentTimeMillis();
         Trace.info("RM::deleteItem(" + id + ", " + key + ") called");
         ReservableItem curObj = (ReservableItem) readData(id, key);
         // Check if there is such an item in the storage
@@ -54,6 +60,7 @@ public class ResourceManagerImpl implements RemoteRevertibleResourceManager {
             if (curObj.getReserved() == 0) {
                 removeData(id, curObj.getKey());
                 Trace.info("RM::deleteItem(" + id + ", " + key + ") item deleted");
+                RMStatistics.instance.getAverageExecutionTime().addValue(System.currentTimeMillis() - start);
                 return true;
             } else {
                 Trace.info("RM::deleteItem(" + id + ", " + key + ") item can't be deleted because some customers reserved it");
@@ -63,16 +70,19 @@ public class ResourceManagerImpl implements RemoteRevertibleResourceManager {
     }
 
     private boolean freeItem(int id, String key, int count) {
+        long start = System.currentTimeMillis();
         Trace.info("RM::freeItem( " + id + ", " + key + ", " +count+") called" );
         ReservableItem item  = (ReservableItem) readData(id, key);
         if (item.getReserved()-count < 0) return false;
         item.setReserved(item.getReserved()-count);
         item.setCount(item.getCount()+count);
+        RMStatistics.instance.getAverageExecutionTime().addValue(System.currentTimeMillis() - start);
         return true;
     }
 
     // reserve an item
     private boolean reserveItem(int id, int customerID, String key, String location, int count) {
+        long start = System.currentTimeMillis();
         Trace.info("RM::reserveItem( " + id + ", customer=" + customerID + ", " + key + ", " + location + " ) called");
         // check if the item is available
         ReservableItem item = (ReservableItem) readData(id, key);
@@ -89,6 +99,7 @@ public class ResourceManagerImpl implements RemoteRevertibleResourceManager {
             item.setReserved(item.getReserved() + count);
 
             Trace.info("RM::reserveItem( " + id + ", " + customerID + ", " + key + ", " + location + ") succeeded");
+            RMStatistics.instance.getAverageExecutionTime().addValue(System.currentTimeMillis() - start);
             return true;
         }
     }
@@ -96,6 +107,7 @@ public class ResourceManagerImpl implements RemoteRevertibleResourceManager {
 
     // query the number of available seats/rooms/cars
     private int queryNum(int id, String key) {
+        long start = System.currentTimeMillis();
         Trace.info("RM::queryNum(" + id + ", " + key + ") called");
         ReservableItem curObj = (ReservableItem) readData(id, key);
         int value = 0;
@@ -103,11 +115,13 @@ public class ResourceManagerImpl implements RemoteRevertibleResourceManager {
             value = curObj.getCount();
         } // else
         Trace.info("RM::queryNum(" + id + ", " + key + ") returns count=" + value);
+        RMStatistics.instance.getAverageExecutionTime().addValue(System.currentTimeMillis() - start);
         return value;
     }
 
     // query the price of an item
     private int queryPrice(int id, String key) {
+        long start = System.currentTimeMillis();
         Trace.info("RM::queryCarsPrice(" + id + ", " + key + ") called");
         ReservableItem curObj = (ReservableItem) readData(id, key);
         int value = 0;
@@ -115,6 +129,7 @@ public class ResourceManagerImpl implements RemoteRevertibleResourceManager {
             value = curObj.getPrice();
         } // else
         Trace.info("RM::queryCarsPrice(" + id + ", " + key + ") returns cost=$" + value);
+        RMStatistics.instance.getAverageExecutionTime().addValue(System.currentTimeMillis() - start);
         return value;
     }
 
@@ -123,6 +138,7 @@ public class ResourceManagerImpl implements RemoteRevertibleResourceManager {
     //  NOTE: if flightPrice <= 0 and the flight already exists, it maintains its current price
     public boolean addFlight(int id, int flightNum, int flightSeats, int flightPrice)
             throws RemoteException {
+        long start = System.currentTimeMillis();
         Trace.info("RM::addFlight(" + id + ", " + flightNum + ", $" + flightPrice + ", " + flightSeats + ") called");
         Flight curObj = (Flight) readData(id, Flight.getKey(flightNum));
         if (curObj == null) {
@@ -140,6 +156,7 @@ public class ResourceManagerImpl implements RemoteRevertibleResourceManager {
             writeData(id, curObj.getKey(), curObj);
             Trace.info("RM::addFlight(" + id + ") modified existing flight " + flightNum + ", seats=" + curObj.getCount() + ", price=$" + flightPrice);
         } // else
+        RMStatistics.instance.getAverageExecutionTime().addValue(System.currentTimeMillis() - start);
         return (true);
     }
 
@@ -153,6 +170,7 @@ public class ResourceManagerImpl implements RemoteRevertibleResourceManager {
     //  NOTE: if price <= 0 and the room location already exists, it maintains its current price
     public boolean addRooms(int id, String location, int count, int price)
             throws RemoteException {
+        long start = System.currentTimeMillis();
         Trace.info("RM::addRooms(" + id + ", " + location + ", " + count + ", $" + price + ") called");
         Hotel curObj = (Hotel) readData(id, Hotel.getKey(location));
         if (curObj == null) {
@@ -169,6 +187,7 @@ public class ResourceManagerImpl implements RemoteRevertibleResourceManager {
             writeData(id, curObj.getKey(), curObj);
             Trace.info("RM::addRooms(" + id + ") modified existing location " + location + ", count=" + curObj.getCount() + ", price=$" + price);
         } // else
+        RMStatistics.instance.getAverageExecutionTime().addValue(System.currentTimeMillis() - start);
         return (true);
     }
 
@@ -183,6 +202,7 @@ public class ResourceManagerImpl implements RemoteRevertibleResourceManager {
     //  NOTE: if price <= 0 and the location already exists, it maintains its current price
     public boolean addCars(int id, String location, int count, int price)
             throws RemoteException {
+        long start = System.currentTimeMillis();
         Trace.info("RM::addCars(" + id + ", " + location + ", " + count + ", $" + price + ") called");
         Car curObj = (Car) readData(id, Car.getKey(location));
         if (curObj == null) {
@@ -199,6 +219,7 @@ public class ResourceManagerImpl implements RemoteRevertibleResourceManager {
             writeData(id, curObj.getKey(), curObj);
             Trace.info("RM::addCars(" + id + ") modified existing location " + location + ", count=" + curObj.getCount() + ", price=$" + price);
         } // else
+        RMStatistics.instance.getAverageExecutionTime().addValue(System.currentTimeMillis() - start);
         return (true);
     }
 
@@ -269,12 +290,14 @@ public class ResourceManagerImpl implements RemoteRevertibleResourceManager {
     //  reservations.
     public RMHashtable getCustomerReservations(int id, int customerID)
             throws RemoteException {
+        long start = System.currentTimeMillis();
         Trace.info("RM::getCustomerReservations(" + id + ", " + customerID + ") called");
         Customer cust = (Customer) readData(id, Customer.getKey(customerID));
         if (cust == null) {
             Trace.warn("RM::getCustomerReservations failed(" + id + ", " + customerID + ") failed--customer doesn't exist");
             return null;
         } else {
+            RMStatistics.instance.getAverageExecutionTime().addValue(System.currentTimeMillis() - start);
             return cust.getReservations();
         } // if
     }
@@ -282,6 +305,7 @@ public class ResourceManagerImpl implements RemoteRevertibleResourceManager {
     // return a bill
     public String queryCustomerInfo(int id, int customerID)
             throws RemoteException {
+        long start = System.currentTimeMillis();
         Trace.info("RM::queryCustomerInfo(" + id + ", " + customerID + ") called" );
         Customer cust = (Customer) readData( id, Customer.getKey(customerID) );
         if ( cust == null ) {
@@ -291,6 +315,7 @@ public class ResourceManagerImpl implements RemoteRevertibleResourceManager {
             String s = cust.printBill();
             Trace.info("RM::queryCustomerInfo(" + id + ", " + customerID + "), bill follows..." );
             System.out.println( s );
+            RMStatistics.instance.getAverageExecutionTime().addValue(System.currentTimeMillis() - start);
             return s;
         } // if
     }
@@ -300,14 +325,16 @@ public class ResourceManagerImpl implements RemoteRevertibleResourceManager {
 
     public int newCustomer(int id)
             throws RemoteException {
+        long start = System.currentTimeMillis();
         Trace.info("INFO: RM::newCustomer(" + id + ") called");
         // Generate a globally unique ID for the new customer
-        int cid = Integer.parseInt(String.valueOf(id%1000) +
+        int cid = Integer.parseInt(String.valueOf(Math.abs(id)%1000) +
                 String.valueOf(Calendar.getInstance().get(Calendar.MILLISECOND)) +
                 String.valueOf(Math.round(Math.random() * 100 + 1)));
         Customer cust = new Customer(cid);
         writeData(id, cust.getKey(), cust);
         Trace.info("RM::newCustomer(" + cid + ") returns ID=" + cid);
+        RMStatistics.instance.getAverageExecutionTime().addValue(System.currentTimeMillis() - start);
         return cid;
     }
 
@@ -331,6 +358,7 @@ public class ResourceManagerImpl implements RemoteRevertibleResourceManager {
 
     // Deletes customer from the database. 
     public boolean deleteCustomer(int id, int customerID) throws RemoteException {
+        long start = System.currentTimeMillis();
         Trace.info("RM::deleteCustomer(" + id + ", " + customerID + ") called");
         Customer cust = (Customer) readData(id, Customer.getKey(customerID));
         if (cust == null) {
@@ -341,6 +369,7 @@ public class ResourceManagerImpl implements RemoteRevertibleResourceManager {
             removeData(id, cust.getKey());
 
             Trace.info("RM::deleteCustomer(" + id + ", " + customerID + ") succeeded");
+            RMStatistics.instance.getAverageExecutionTime().addValue(System.currentTimeMillis() - start);
             return true;
         }
     }
@@ -393,13 +422,16 @@ public class ResourceManagerImpl implements RemoteRevertibleResourceManager {
 
     @Override
     public boolean isCustomer(int id, int cid) throws RemoteException {
+        long start = System.currentTimeMillis();
         Trace.info("RM::isCustomer(" + id + ", " + cid + ") called");
         Customer cust = (Customer) readData(id, Customer.getKey(cid));
+        RMStatistics.instance.getAverageExecutionTime().addValue(System.currentTimeMillis() - start);
         return (cust != null);
     }
 
     @Override
     public boolean addReservationToCustomer(int id, int cid, String key, String location, int price, Resource resourceType) throws RemoteException {
+        long start = System.currentTimeMillis();
         Trace.info("RM::addReservationToCustomer(" + id + ", " + cid + ", " + key + ", " + location + ", " + price + ") called");
         Customer cust = (Customer) readData(id, Customer.getKey(cid));
         if (cust == null) {
@@ -409,6 +441,7 @@ public class ResourceManagerImpl implements RemoteRevertibleResourceManager {
             cust.reserve(key, location, price, resourceType);
             writeData( id, cust.getKey(), cust );
             Trace.info("RM::addReservationToCustomer succeeded.");
+            RMStatistics.instance.getAverageExecutionTime().addValue(System.currentTimeMillis() - start);
             return true;
         }
     }
@@ -426,6 +459,26 @@ public class ResourceManagerImpl implements RemoteRevertibleResourceManager {
 
     @Override
     public boolean freeRoom(int id, String location, int count) throws RemoteException {
-        return freeRoom(id, Hotel.getKey(location), count);
+        return freeItem(id, Hotel.getKey(location), count);
+    }
+
+    private void printRuntimeStats() {
+        System.out.println("---- Statistics ----");
+        System.out.println("");
+        System.out.println("Average execution time: " + RMStatistics.instance.getAverageExecutionTime().getMean() + "ms");
+        System.out.println("Average commit time: " + RMStatistics.instance.getAverageCommitTime().getMean() + "ms");
+        System.out.println("Average abort time: " + RMStatistics.instance.getAverageAbortTime().getMean() + "ms");
+    }
+
+    @Override
+    public void shutdown() throws RemoteException {
+        printRuntimeStats();
+        Timer timedShutdown = new Timer();
+        timedShutdown.schedule(new TimerTask() {
+            @Override
+            public void run() {
+                System.exit(0);
+            }
+        }, 2000);
     }
 }

@@ -1,8 +1,11 @@
 package middleware.lockManager;
 
 import com.sun.org.apache.regexp.internal.RE;
+import middleware.MiddlewareStatistics;
+import org.apache.commons.math3.stat.descriptive.DescriptiveStatistics;
 
 import java.util.BitSet;
+import java.util.Hashtable;
 import java.util.Vector;
 import java.util.concurrent.locks.Lock;
 
@@ -18,6 +21,10 @@ public class LockManager
     private static TPHashTable stampTable = new TPHashTable(LockManager.TABLE_SIZE);
     private static TPHashTable waitTable = new TPHashTable(LockManager.TABLE_SIZE);
 
+
+    private static Hashtable<Integer, Long> startReadLockTime = new Hashtable(LockManager.TABLE_SIZE);
+    private static Hashtable<Integer, Long> startWriteLockTime = new Hashtable(LockManager.TABLE_SIZE);
+
     private static LockManager instance = new LockManager();
 
     public static LockManager get() {
@@ -29,7 +36,10 @@ public class LockManager
     }
     
     public boolean Lock(int xid, String strData, int lockType) throws DeadlockException {
-    
+
+        if (lockType == WRITE) startWriteLockTime.put(xid, System.currentTimeMillis());
+        else if (lockType == READ) startReadLockTime.put(xid, System.currentTimeMillis());
+
         // if any parameter is invalid, then return false
         if (xid < 0) { 
             return false;
@@ -70,25 +80,41 @@ public class LockManager
                         }
                          
                         if (bConvert.get(0) == true) {
-                             trxnObj.lockType = READ;
-                             dataObj.lockType = READ;
-                            // lock conversion 
-                            // *** ADD CODE HERE *** to carry out the lock conversion in the
-                            // lock table
+
+                            // lock conversion
+                            System.out.println("Lock Conversion for transaction "+ xid + " on " + strData + ".");
+
+                            TrxnObj readTrx = new TrxnObj(xid, strData, TrxnObj.READ);
+                            DataObj readData = new DataObj(xid, strData, DataObj.READ);
+
+                            // remove old read locks
+                            this.lockTable.remove(readTrx);
+                            this.lockTable.remove(readData);
+
+
+                            // add new write locks
+                            this.lockTable.add(trxnObj);
+                            this.lockTable.add(dataObj);
+
+
                         } else {
                             // a lock request that is not lock conversion
                             this.lockTable.add(trxnObj);
                             this.lockTable.add(dataObj);
                         }
+                        if (lockType == WRITE)
+                            MiddlewareStatistics.instance.getAverageWriteLockGrant().addValue(System.currentTimeMillis() - startWriteLockTime.get(xid));
+                        else if (lockType == READ)
+                            MiddlewareStatistics.instance.getAverageReadLockGrant().addValue(System.currentTimeMillis() - startReadLockTime.get(xid));
                     }
                 }
                 if (bConflict) {
-                    // lock conflict exists, wait
                     WaitLock(dataObj);
                 }
             }
         } 
         catch (DeadlockException deadlock) {
+            MiddlewareStatistics.instance.setDeadlockCount(MiddlewareStatistics.instance.getDeadlockCount() + 1);
             throw deadlock;
         }
         catch (RedundantLockRequestException redundantlockrequest) {
