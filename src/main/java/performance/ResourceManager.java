@@ -253,7 +253,7 @@ public class ResourceManager implements Serializable {
     }
 
     /**
-     * Creates 3 rooms;
+     * Creates 4 cars;
      * ONE RM INVOLVED
      * @throws RemoteException
      */
@@ -263,6 +263,7 @@ public class ResourceManager implements Serializable {
             String location1 = String.valueOf(idCounter++);
             String location2 = String.valueOf(idCounter++);
             String location3 = String.valueOf(idCounter++);
+            String location4 = String.valueOf(idCounter++);
 
 
             if (!rm1.addCars(txId, location1, 12, 50))
@@ -270,6 +271,8 @@ public class ResourceManager implements Serializable {
             if (!rm1.addCars(txId, location2, 12, 50))
                 abort.invoke();
             if (!rm1.addCars(txId, location3, 12, 50))
+                abort.invoke();
+            if (!rm1.addCars(txId, location4, 3, 52))
                 abort.invoke();
 
 

@@ -459,7 +459,7 @@ public class ResourceManagerImpl implements RemoteRevertibleResourceManager {
 
     @Override
     public boolean freeRoom(int id, String location, int count) throws RemoteException {
-        return freeRoom(id, Hotel.getKey(location), count);
+        return freeItem(id, Hotel.getKey(location), count);
     }
 
     private void printRuntimeStats() {
