@@ -46,9 +46,12 @@ class TxManager {
     @Synchronized
     private fun commitTransaction(transaction: Transaction) {
         val start =  System.currentTimeMillis()
-        transaction.commit()
+
+        transaction.commitAndUnlock()
         liveTransaction.remove(transaction.id)
+
         Logger.print().info("Transaction " + transaction.id + " committed", "TxManager")
+
         MiddlewareStatistics.instance.averageCommitTime.addValue((System.currentTimeMillis() - start).toDouble())
         MiddlewareStatistics.instance.transactionCommitted++
     }
@@ -56,9 +59,12 @@ class TxManager {
     @Synchronized
     private fun abortTransaction(transaction: Transaction) {
         val start =  System.currentTimeMillis()
-        transaction.abort()
+
+        transaction.abortAndUnlock()
         liveTransaction.remove(transaction.id)
+
         Logger.print().warning("Transaction " + transaction.id + " aborted", "TxManager")
+
         MiddlewareStatistics.instance.averageAbortTime.addValue((System.currentTimeMillis() - start).toDouble())
         MiddlewareStatistics.instance.transactionAborted++
     }

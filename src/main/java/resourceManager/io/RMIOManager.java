@@ -8,6 +8,7 @@ import common.resource.Resource;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.Hashtable;
 
 public class RMIOManager {
 
@@ -18,6 +19,7 @@ public class RMIOManager {
 
     public static final String DB_ONE = "dbOne";
     public static final String DB_TWO = "dbTwo";
+    public static final String TX_RECORD = "txRecord";
 
     private final FileManager fm = new FileManager();
 
@@ -37,6 +39,7 @@ public class RMIOManager {
         fm.openFile(MASTER, PREFIX + "/" + MASTER, false);
         fm.openFile(DB_ONE, PREFIX + "/" + DB_ONE, false);
         fm.openFile(DB_TWO, PREFIX + "/" + DB_TWO, false);
+        fm.openFile(TX_RECORD, PREFIX + "/" + TX_RECORD, false);
 
 
     }
@@ -85,35 +88,47 @@ public class RMIOManager {
         }
     }
 
-    public RMHashtable readMasterDB() throws RMIOManagerException {
+    public TxRecord readTxRecord() throws RMIOManagerException {
         try {
-            if (fm.read(MASTER).isEmpty()) {
-                Logger.print().warning("Master not defined.", "RMIOManager");
-                throw new RMIOManagerException("Master not defined");
-            }
-            return readDB((String) fm.read(MASTER).get(0));
+            return (TxRecord) fm.readObject(TX_RECORD);
         } catch (IOException e) {
-            Logger.print().error(e.getMessage(), "RMIOManager");
-            throw new RMIOManagerException("Failed to read Database ");
+            Logger.print().warning("Could not read Transaction Record", "RMIOManager");
+            throw new RMIOManagerException("Failed to read Transaction Record ");
+        } catch (ClassNotFoundException e) {
+            Logger.print().warning("Could not read Transaction Record", "RMIOManager");
+            throw new RMIOManagerException("Failed to read Transaction Record ");
         }
     }
 
-    public RMHashtable readSlaveDB() throws RMIOManagerException {
-        try {
-            if (fm.read(MASTER).isEmpty()) {
-                Logger.print().warning("Slave not defined.","RMIOManager");
-                throw new RMIOManagerException("Slave not defined");
-            }
-            if (fm.read(MASTER).get(0).equals(DB_ONE)) {
-                return readDB(DB_TWO);
-            } else {
-                return readDB(DB_ONE);
-            }
-        } catch (IOException e) {
-            Logger.print().error(e.getMessage(), "RMIOManager");
-            throw new RMIOManagerException("Failed to read Database ");
-        }
-    }
+//    public RMHashtable readMasterDB() throws RMIOManagerException {
+//        try {
+//            if (fm.read(MASTER).isEmpty()) {
+//                Logger.print().warning("Master not defined.", "RMIOManager");
+//                throw new RMIOManagerException("Master not defined");
+//            }
+//            return readDB((String) fm.read(MASTER).get(0));
+//        } catch (IOException e) {
+//            Logger.print().error(e.getMessage(), "RMIOManager");
+//            throw new RMIOManagerException("Failed to read Database ");
+//        }
+//    }
+//
+//    public RMHashtable readSlaveDB() throws RMIOManagerException {
+//        try {
+//            if (fm.read(MASTER).isEmpty()) {
+//                Logger.print().warning("Slave not defined.","RMIOManager");
+//                throw new RMIOManagerException("Slave not defined");
+//            }
+//            if (fm.read(MASTER).get(0).equals(DB_ONE)) {
+//                return readDB(DB_TWO);
+//            } else {
+//                return readDB(DB_ONE);
+//            }
+//        } catch (IOException e) {
+//            Logger.print().error(e.getMessage(), "RMIOManager");
+//            throw new RMIOManagerException("Failed to read Database ");
+//        }
+//    }
 
     public String readMasterRecord() throws RMIOManagerException {
         try {
@@ -138,6 +153,15 @@ public class RMIOManager {
         }
     }
 
+    public boolean writeTxRecord(TxRecord txRecord) throws RMIOManagerException {
+        try {
+            return fm.writeObject(TX_RECORD, txRecord);
+        } catch (IOException e) {
+            Logger.print().error(e.getMessage(), "RMIOManager");
+            throw new RMIOManagerException("Failed to write TX Record changes.");
+        }
+    }
+
     public boolean setMaster(String id) throws RMIOManagerException {
         try {
             return fm.write(MASTER, id);
@@ -146,5 +170,7 @@ public class RMIOManager {
             throw new RMIOManagerException("Failed to write master change.");
         }
     }
+
+
 
 }

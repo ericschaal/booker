@@ -3,10 +3,11 @@ package resourceManager;
 import common.io.Logger;
 import common.net.NetworkAddress;
 import common.resource.RMI;
-import common.resource.RemoteRevertibleResourceManager;
+import common.resource.EndPointResourceManager;
 import common.resource.Resource;
 import resourceManager.io.RMIOManager;
 import resourceManager.storage.Database;
+import resourceManager.tx.TxManager;
 
 import java.io.IOException;
 import java.rmi.AlreadyBoundException;
@@ -22,6 +23,7 @@ public class EndpointRM {
         // Persistence Setup
         RMIOManager.init("./data/", resource);
         Database.init();
+        TxManager.init();
 
         if (System.getSecurityManager() == null) {
             System.setSecurityManager(new SecurityManager());
@@ -32,7 +34,7 @@ public class EndpointRM {
 
         ResourceManagerImpl obj = new ResourceManagerImpl();
 
-        RemoteRevertibleResourceManager rm = (RemoteRevertibleResourceManager) UnicastRemoteObject.exportObject(obj, 0);
+        EndPointResourceManager rm = (EndPointResourceManager) UnicastRemoteObject.exportObject(obj, 0);
 
         registry.rebind(RMI.toRMIName(resource), rm);
 

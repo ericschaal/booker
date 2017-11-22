@@ -3,7 +3,7 @@ package middleware;
 
 import common.io.Logger;
 import common.resource.RMI;
-import common.resource.RemoteRevertibleResourceManager;
+import common.resource.EndPointResourceManager;
 import common.resource.TransactionalResourceManager;
 import middleware.config.MiddlewareConfig;
 import middleware.io.MiddlewareIOManager;
@@ -32,10 +32,10 @@ public class Middleware {
 
         Registry registry = LocateRegistry.getRegistry(config.getBindAddress().getIp(), config.getBindAddress().getPort());
 
-        RemoteRevertibleResourceManager flightRm = (RemoteRevertibleResourceManager) flightRegistry.lookup(RMI.FLIGHT);
-        RemoteRevertibleResourceManager carRm = (RemoteRevertibleResourceManager) carRegistry.lookup(RMI.CAR);
-        RemoteRevertibleResourceManager customerRm = (RemoteRevertibleResourceManager) customerRegistry.lookup(RMI.CUSTOMER);
-        RemoteRevertibleResourceManager roomRm = (RemoteRevertibleResourceManager) roomRegistry.lookup(RMI.ROOM);
+        EndPointResourceManager flightRm = (EndPointResourceManager) flightRegistry.lookup(RMI.FLIGHT);
+        EndPointResourceManager carRm = (EndPointResourceManager) carRegistry.lookup(RMI.CAR);
+        EndPointResourceManager customerRm = (EndPointResourceManager) customerRegistry.lookup(RMI.CUSTOMER);
+        EndPointResourceManager roomRm = (EndPointResourceManager) roomRegistry.lookup(RMI.ROOM);
 
 
         if (flightRm == null || carRm == null || customerRm == null || roomRm == null) {

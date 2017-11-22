@@ -11,46 +11,32 @@ import common.resource.*;
 import resourceManager.perf.RMStatistics;
 import resourceManager.storage.Database;
 import resourceManager.storage.DatabaseException;
+import resourceManager.tx.TxManager;
 
 import java.util.*;
 import java.rmi.RemoteException;
 
 
-public class ResourceManagerImpl implements RemoteRevertibleResourceManager {
+public class ResourceManagerImpl implements EndPointResourceManager {
 
     public ResourceManagerImpl() { }
 
 
+    @Override
+    public boolean voteRequest(int txId) throws RemoteException {
+        return TxManager.getInstance().voteRequest(txId);
+    }
+
     public void newTransaction(int txId) throws RemoteException {
-        //history.addToHistory(txId, Database.get().cloneDb());
-        Database.get().newLocalCopy(txId);
+        TxManager.getInstance().newTransaction(txId);
     }
 
     public boolean abortTransaction(int txId) throws RemoteException {
-        long start = System.currentTimeMillis();
-        try {
-            Database.get().removeTxLocalCopy(txId);
-            return true;
-        } catch (DatabaseException e) {
-            Logger.print().error(e.getMessage(), "ResourceManagerImpl");
-            return false;
-        } finally {
-            RMStatistics.instance.getAverageAbortTime().addValue(System.currentTimeMillis() - start);
-        }
+        return TxManager.getInstance().abortTransaction(txId);
     }
 
     public boolean commitTransaction(int txId) throws RemoteException {
-        long start = System.currentTimeMillis();
-        try {
-            Database.get().writeBackLocalCopyToDiskAndRemove(txId);
-            Database.get().swapMaster();
-            return true;
-        } catch (DatabaseException e) {
-            Logger.print().error(e.getMessage(), "ResourceManagerImpl");
-            return false;
-        }finally {
-            RMStatistics.instance.getAverageCommitTime().addValue(System.currentTimeMillis() - start);
-        }
+        return TxManager.getInstance().commitTransaction(txId);
     }
 
 

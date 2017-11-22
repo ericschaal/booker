@@ -22,14 +22,14 @@ public class MiddlewareResourceManager implements TransactionalResourceManager {
 
     private final TxManager globalTxManager;
 
-    private final RemoteRevertibleResourceManager carRM;
-    private final RemoteRevertibleResourceManager flightRM;
-    private final RemoteRevertibleResourceManager customerRM;
-    private final RemoteRevertibleResourceManager roomRM;
+    private final EndPointResourceManager carRM;
+    private final EndPointResourceManager flightRM;
+    private final EndPointResourceManager customerRM;
+    private final EndPointResourceManager roomRM;
 
 
 
-    public MiddlewareResourceManager(RemoteRevertibleResourceManager carRM, RemoteRevertibleResourceManager flightRM, RemoteRevertibleResourceManager customerRM, RemoteRevertibleResourceManager roomRM) {
+    public MiddlewareResourceManager(EndPointResourceManager carRM, EndPointResourceManager flightRM, EndPointResourceManager customerRM, EndPointResourceManager roomRM) {
         this.carRM = carRM;
         this.flightRM = flightRM;
         this.customerRM = customerRM;
@@ -312,19 +312,19 @@ public class MiddlewareResourceManager implements TransactionalResourceManager {
         }, 2000);
     }
 
-    public RemoteRevertibleResourceManager getCarRM() {
+    public EndPointResourceManager getCarRM() {
         return carRM;
     }
 
-    public RemoteRevertibleResourceManager getFlightRM() {
+    public EndPointResourceManager getFlightRM() {
         return flightRM;
     }
 
-    public RemoteRevertibleResourceManager getCustomerRM() {
+    public EndPointResourceManager getCustomerRM() {
         return customerRM;
     }
 
-    public RemoteRevertibleResourceManager getRoomRM() {
+    public EndPointResourceManager getRoomRM() {
         return roomRM;
     }
 }

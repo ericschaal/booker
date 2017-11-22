@@ -4,11 +4,13 @@ import common.hashtable.RMHashtable;
 
 import java.rmi.RemoteException;
 
-public interface RemoteRevertibleResourceManager extends RemoteResourceManager {
+public interface EndPointResourceManager extends RemoteResourceManager {
 
     void newTransaction(int txId) throws RemoteException;
     boolean abortTransaction(int txId) throws RemoteException;
     boolean commitTransaction(int txId) throws RemoteException;
+
+    boolean voteRequest(int txId) throws RemoteException;
 
     boolean isCustomer(int id, int cid) throws  RemoteException;
     boolean addReservationToCustomer(int id, int cid, String key, String location, int price, Resource resource) throws RemoteException;

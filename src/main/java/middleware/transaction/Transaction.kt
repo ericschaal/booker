@@ -1,7 +1,7 @@
 package middleware.transaction
 
 import common.io.Logger
-import common.resource.RemoteRevertibleResourceManager
+import common.resource.EndPointResourceManager
 import common.resource.Resource
 import middleware.lockManager.LockManager
 import java.io.Serializable
@@ -11,7 +11,7 @@ import java.util.*
 class Transaction : Serializable {
 
     var id: Int
-    private var involved: Array<RemoteRevertibleResourceManager?> = Array(4, { null })
+    private var involved: Array<EndPointResourceManager?> = Array(4, { null })
     private var timer: Timer
 
 
@@ -22,7 +22,7 @@ class Transaction : Serializable {
         Logger.print().info("Alive", "Transaction:" + id)
     }
 
-    fun setInvolved(resource: Resource, revertibleResourceManager: RemoteRevertibleResourceManager) {
+    fun setInvolved(resource: Resource, revertibleResourceManager: EndPointResourceManager) {
         if (involved[resource.ordinal] == null) {
             revertibleResourceManager.newTransaction(id)
             involved[resource.ordinal] = revertibleResourceManager
@@ -30,39 +30,65 @@ class Transaction : Serializable {
         }
     }
 
-    fun commit() {
+    fun commitAndUnlock() {
         try {
-            involved.forEach {
-                it?.commitTransaction(id)
+
+            Logger.print().info("Starting 2PL.", "Transaction:" + id)
+            Logger.print().info("Sending VOTE_REQ", "[2PC]Transaction:" + id)
+
+            val voteResult = involved.fold(true) { acc, element ->
+                if (element != null) {
+                    acc && element.voteRequest(id)
+                } else true
             }
 
-            Logger.print().info("Commit sent", "Transaction:" + id)
+            Logger.print().info("Vote Result is " + voteResult, "[2PC]Transaction:" + id)
+
+            if (voteResult) {
+                commit()
+            } else {
+                abort()
+            }
+
+
         } finally {
             LockManager.get().UnlockAll(id)
 
             timer.cancel()
             timer.purge()
         }
-
-
     }
 
-    fun abort() { //TODO abort procedure.
 
+    fun abortAndUnlock() {
         try {
-
             involved.forEach {
                 it?.abortTransaction(id)
             }
-
             Logger.print().info("Abort sent", "Transaction:" + id)
-
         } finally {
             LockManager.get().UnlockAll(id)
 
             timer.cancel()
             timer.purge()
         }
+    }
+
+    private fun commit() {
+
+        involved.forEach {
+            it?.commitTransaction(id)
+        }
+        Logger.print().info("Commit sent to all involved RMs", "Transaction:" + id)
+
+    }
+
+    private fun abort() { //TODO abort procedure.
+
+        involved.forEach {
+            it?.abortTransaction(id)
+        }
+        Logger.print().info("Abort sent", "Transaction:" + id)
 
     }
 
