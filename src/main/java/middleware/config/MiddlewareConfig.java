@@ -1,4 +1,4 @@
-package middleware;
+package middleware.config;
 
 import common.net.NetworkAddress;
 

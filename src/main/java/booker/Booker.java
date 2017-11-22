@@ -5,10 +5,11 @@ import common.io.Logger;
 import common.net.NetworkAddress;
 import common.resource.Resource;
 import middleware.Middleware;
-import middleware.MiddlewareConfig;
+import middleware.config.MiddlewareConfig;
 import performance.*;
 import resourceManager.EndpointRM;
 
+import java.io.IOException;
 import java.rmi.AlreadyBoundException;
 import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
@@ -65,7 +66,7 @@ public class Booker {
         new Middleware(config);
     }
 
-    public static void startRM(NetworkAddress registry, Resource resource) throws AlreadyBoundException, RemoteException {
+    public static void startRM(NetworkAddress registry, Resource resource) throws AlreadyBoundException, IOException {
         new EndpointRM(registry, resource);
     }
 

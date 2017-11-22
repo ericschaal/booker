@@ -1,13 +1,10 @@
 package middleware.lockManager;
 
-import com.sun.org.apache.regexp.internal.RE;
-import middleware.MiddlewareStatistics;
-import org.apache.commons.math3.stat.descriptive.DescriptiveStatistics;
+import middleware.perf.MiddlewareStatistics;
 
 import java.util.BitSet;
 import java.util.Hashtable;
 import java.util.Vector;
-import java.util.concurrent.locks.Lock;
 
 public class LockManager
 {

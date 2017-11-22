@@ -5,6 +5,8 @@ import common.io.Logger;
 import common.resource.RMI;
 import common.resource.RemoteRevertibleResourceManager;
 import common.resource.TransactionalResourceManager;
+import middleware.config.MiddlewareConfig;
+import middleware.io.MiddlewareIOManager;
 
 import java.rmi.AlreadyBoundException;
 import java.rmi.NotBoundException;
@@ -19,6 +21,8 @@ public class Middleware {
 
     public Middleware(MiddlewareConfig config) throws RemoteException, AlreadyBoundException, NotBoundException {
 
+
+        MiddlewareIOManager ioManager = new MiddlewareIOManager("./data/");
 
 
         Registry carRegistry = LocateRegistry.getRegistry(config.getCarRegistryAddress().getIp(), config.getCarRegistryAddress().getPort());

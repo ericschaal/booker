@@ -5,8 +5,13 @@
 package resourceManager;
 
 import common.hashtable.RMHashtable;
+import common.io.Logger;
 import common.io.Trace;
 import common.resource.*;
+import resourceManager.perf.RMStatistics;
+import resourceManager.storage.Database;
+import resourceManager.storage.DatabaseException;
+
 import java.util.*;
 import java.rmi.RemoteException;
 
@@ -15,24 +20,38 @@ public class ResourceManagerImpl implements RemoteRevertibleResourceManager {
 
     public ResourceManagerImpl() { }
 
-    private final TransactionHistory history = new TransactionHistory();
+    //private final TransactionHistory history = new TransactionHistory();
 
     public void newTransaction(int txId) throws RemoteException {
-        history.addToHistory(txId, Database.getActiveDb().cloneDb());
+        //history.addToHistory(txId, Database.getActiveDb().cloneDb());
+        Database.getActiveDb().newLocalCopy(txId);
     }
 
     public boolean abortTransaction(int txId) throws RemoteException {
         long start = System.currentTimeMillis();
-        boolean result = history.abortTransaction(txId);
-        RMStatistics.instance.getAverageAbortTime().addValue(System.currentTimeMillis() - start);
-        return result;
+        try {
+            Database.getActiveDb().removeTxLocalCopy(txId);
+            return true;
+        } catch (DatabaseException e) {
+            Logger.print().error(e.getMessage(), "ResourceManagerImpl");
+            return false;
+        } finally {
+            RMStatistics.instance.getAverageAbortTime().addValue(System.currentTimeMillis() - start);
+        }
     }
 
     public boolean commitTransaction(int txId) throws RemoteException {
         long start = System.currentTimeMillis();
-        boolean result = history.commitTransaction(txId);
-        RMStatistics.instance.getAverageCommitTime().addValue(System.currentTimeMillis() - start);
-        return result;
+        try {
+            Database.getActiveDb().writeBackLocalCopyToDiskAndRemove(txId);
+            Database.getActiveDb().swapMaster();
+            return true;
+        } catch (DatabaseException e) {
+            Logger.print().error(e.getMessage(), "ResourceManagerImpl");
+            return false;
+        }finally {
+            RMStatistics.instance.getAverageCommitTime().addValue(System.currentTimeMillis() - start);
+        }
     }
 
 

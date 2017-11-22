@@ -1,4 +1,4 @@
-package middleware;
+package middleware.perf;
 
 import org.apache.commons.math3.stat.descriptive.DescriptiveStatistics;
 

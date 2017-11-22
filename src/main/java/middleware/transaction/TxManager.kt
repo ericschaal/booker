@@ -3,7 +3,7 @@ package middleware.transaction
 import common.io.Logger
 import common.resource.Resource
 import middleware.MiddlewareResourceManager
-import middleware.MiddlewareStatistics
+import middleware.perf.MiddlewareStatistics
 import middleware.lockManager.DeadlockException
 import java.rmi.RemoteException
 import kotlin.concurrent.timerTask

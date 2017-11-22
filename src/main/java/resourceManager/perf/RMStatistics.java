@@ -1,4 +1,4 @@
-package resourceManager;
+package resourceManager.perf;
 
 import org.apache.commons.math3.stat.descriptive.DescriptiveStatistics;
 

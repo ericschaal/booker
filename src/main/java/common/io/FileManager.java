@@ -6,6 +6,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 import java.util.Hashtable;
+import java.util.List;
 
 
 public class FileManager {
@@ -13,9 +14,9 @@ public class FileManager {
     private final Hashtable<String, Path> files = new Hashtable<>();
 
 
-    public boolean openFile(String alias, String path, boolean create) throws IOException {
+    public boolean openFile(String alias, String path, boolean forceCreate) throws IOException {
             Path loc = Paths.get(path);
-            if (create) {
+            if (forceCreate) {
                 if (Files.isRegularFile(loc)) {
                     Logger.print().warning("Overwriting filed + " + path);
                     Files.delete(loc);
@@ -23,7 +24,9 @@ public class FileManager {
                 files.put(alias, Files.createFile(loc));
                 return true;
             } else {
-                if (! Files.isRegularFile(loc)) throw new RuntimeException("File doesn't exist");
+                if (! Files.isRegularFile(loc)) {
+                    Files.createFile(loc);
+                }
                 files.put(alias, loc);
                 return true;
             }
@@ -70,6 +73,16 @@ public class FileManager {
         } else {
             Logger.print().error("File not opened.");
             throw new RuntimeException("No readable object in file");
+        }
+    }
+
+    public List read(String alias) throws IOException {
+        if (files.containsKey(alias)) {
+            Files.readAllLines(files.get(alias));
+            return Files.readAllLines(files.get(alias));
+        } else {
+            Logger.print().error("File not opened.");
+            throw new RuntimeException("No readable file");
         }
     }
 

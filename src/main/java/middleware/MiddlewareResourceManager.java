@@ -15,6 +15,7 @@ import java.util.Vector;
 
 import middleware.lockManager.DeadlockException;
 import middleware.lockManager.LockManager;
+import middleware.perf.MiddlewareStatistics;
 import middleware.transaction.*;
 
 public class MiddlewareResourceManager implements TransactionalResourceManager {
