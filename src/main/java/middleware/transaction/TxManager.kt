@@ -1,8 +1,7 @@
 package middleware.transaction
 
-import common.Logger
-import common.RemoteConcurrentResourceManager
-import common.Resource
+import common.io.Logger
+import common.resource.Resource
 import middleware.MiddlewareResourceManager
 import middleware.MiddlewareStatistics
 import middleware.lockManager.DeadlockException

@@ -1,4 +1,6 @@
-package common;
+package common.resource;
+
+import common.resource.Resource;
 
 public class RMI {
 

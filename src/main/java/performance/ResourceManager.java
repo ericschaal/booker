@@ -1,6 +1,6 @@
 package performance;
 
-import common.TransactionalResourceManager;
+import common.resource.TransactionalResourceManager;
 
 import java.io.Serializable;
 import java.rmi.RemoteException;

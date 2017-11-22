@@ -1,6 +1,4 @@
-package common;
-
-import java.io.IOException;
+package common.io;
 
 public class Logger {
 

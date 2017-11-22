@@ -1,6 +1,6 @@
 package resourceManager;
 
-import common.Logger;
+import common.io.Logger;
 import common.hashtable.RMHashtable;
 
 import java.io.Serializable;

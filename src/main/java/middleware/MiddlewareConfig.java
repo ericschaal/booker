@@ -1,8 +1,6 @@
 package middleware;
 
-import common.NetworkAddress;
-
-import java.rmi.registry.Registry;
+import common.net.NetworkAddress;
 
 public class MiddlewareConfig {
 

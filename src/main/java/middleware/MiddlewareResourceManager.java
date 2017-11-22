@@ -1,7 +1,8 @@
 package middleware;
 
-import common.*;
 import common.hashtable.RMHashtable;
+import common.io.Logger;
+import common.io.Trace;
 import common.resource.*;
 import kotlin.Unit;
 import kotlin.jvm.functions.Function0;
@@ -33,7 +34,7 @@ public class MiddlewareResourceManager implements TransactionalResourceManager {
         this.customerRM = customerRM;
         this.roomRM = roomRM;
 
-        this.globalTxManager = new TxManager(this, 3 * 60 * 1000 /* 3 minutes */);
+        this.globalTxManager = new TxManager(this, 30 * 1000 /* 3 minutes */);
     }
 
 

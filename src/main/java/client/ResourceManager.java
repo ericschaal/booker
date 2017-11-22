@@ -1,13 +1,11 @@
 package client;
 
-import common.Logger;
-import common.RemoteResourceManager;
-import common.TransactionalResourceManager;
+import common.io.Logger;
+import common.resource.RemoteResourceManager;
+import common.resource.TransactionalResourceManager;
 import middleware.lockManager.DeadlockException;
 import middleware.transaction.InvalidTransactionException;
 import middleware.transaction.TransactionAbortedException;
-import middleware.transaction.TransactionResult;
-import middleware.transaction.TransactionStatus;
 
 
 import java.rmi.RemoteException;

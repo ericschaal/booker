@@ -1,9 +1,9 @@
 package client;
 
-import common.Logger;
-import common.NetworkAddress;
-import common.RMI;
-import common.TransactionalResourceManager;
+import common.io.Logger;
+import common.net.NetworkAddress;
+import common.resource.RMI;
+import common.resource.TransactionalResourceManager;
 
 import java.io.BufferedReader;
 import java.io.IOException;

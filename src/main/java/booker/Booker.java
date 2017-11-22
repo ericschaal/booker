@@ -1,9 +1,9 @@
 package booker;
 
 import client.Client;
-import common.Logger;
-import common.NetworkAddress;
-import common.Resource;
+import common.io.Logger;
+import common.net.NetworkAddress;
+import common.resource.Resource;
 import middleware.Middleware;
 import middleware.MiddlewareConfig;
 import performance.*;

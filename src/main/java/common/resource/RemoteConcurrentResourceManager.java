@@ -1,4 +1,4 @@
-package common;
+package common.resource;
 
 import middleware.lockManager.DeadlockException;
 import middleware.transaction.InvalidTransactionException;

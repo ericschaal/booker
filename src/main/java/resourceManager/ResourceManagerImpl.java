@@ -4,8 +4,8 @@
 //
 package resourceManager;
 
-import common.*;
 import common.hashtable.RMHashtable;
+import common.io.Trace;
 import common.resource.*;
 import java.util.*;
 import java.rmi.RemoteException;

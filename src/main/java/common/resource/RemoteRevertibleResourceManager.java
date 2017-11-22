@@ -1,4 +1,4 @@
-package common;
+package common.resource;
 
 import common.hashtable.RMHashtable;
 

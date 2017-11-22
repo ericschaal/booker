@@ -1,5 +1,6 @@
-package common;
+package common.resource;
 
+import common.resource.RemoteConcurrentResourceManager;
 import kotlin.Unit;
 import kotlin.jvm.functions.Function0;
 import middleware.MiddlewareResourceManager;

@@ -1,6 +1,10 @@
 package resourceManager;
 
-import common.*;
+import common.io.Logger;
+import common.net.NetworkAddress;
+import common.resource.RMI;
+import common.resource.RemoteRevertibleResourceManager;
+import common.resource.Resource;
 
 import java.rmi.AlreadyBoundException;
 import java.rmi.RemoteException;
