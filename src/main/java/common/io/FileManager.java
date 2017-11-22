@@ -78,7 +78,6 @@ public class FileManager {
 
     public List read(String alias) throws IOException {
         if (files.containsKey(alias)) {
-            Files.readAllLines(files.get(alias));
             return Files.readAllLines(files.get(alias));
         } else {
             Logger.print().error("File not opened.");

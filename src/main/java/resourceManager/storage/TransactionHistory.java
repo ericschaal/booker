@@ -14,7 +14,7 @@ import java.util.Hashtable;
 //
 //    public boolean abortTransaction(int txId){
 //        if (liveTransactions.containsKey(txId)) {
-//            Database.getActiveDb().revertDb(liveTransactions.get(txId));
+//            Database.get().revertDb(liveTransactions.get(txId));
 //            liveTransactions.remove(txId);
 //            Logger.print().info("Transaction " + txId + " aborted.", "TransactionHistory");
 //            return true;

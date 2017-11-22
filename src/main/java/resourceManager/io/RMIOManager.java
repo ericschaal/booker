@@ -77,7 +77,7 @@ public class RMIOManager {
         try {
             return (RMHashtable) fm.readObject(id);
         } catch (IOException e) {
-            Logger.print().error(e.getMessage(), "RMIOManager");
+            Logger.print().warning("Could not read stored database", "RMIOManager");
             throw new RMIOManagerException("Failed to read Database " + id);
         } catch (ClassNotFoundException e) {
             Logger.print().error(e.getMessage(), "RMIOManager");

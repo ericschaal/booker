@@ -20,17 +20,16 @@ public class ResourceManagerImpl implements RemoteRevertibleResourceManager {
 
     public ResourceManagerImpl() { }
 
-    //private final TransactionHistory history = new TransactionHistory();
 
     public void newTransaction(int txId) throws RemoteException {
-        //history.addToHistory(txId, Database.getActiveDb().cloneDb());
-        Database.getActiveDb().newLocalCopy(txId);
+        //history.addToHistory(txId, Database.get().cloneDb());
+        Database.get().newLocalCopy(txId);
     }
 
     public boolean abortTransaction(int txId) throws RemoteException {
         long start = System.currentTimeMillis();
         try {
-            Database.getActiveDb().removeTxLocalCopy(txId);
+            Database.get().removeTxLocalCopy(txId);
             return true;
         } catch (DatabaseException e) {
             Logger.print().error(e.getMessage(), "ResourceManagerImpl");
@@ -43,8 +42,8 @@ public class ResourceManagerImpl implements RemoteRevertibleResourceManager {
     public boolean commitTransaction(int txId) throws RemoteException {
         long start = System.currentTimeMillis();
         try {
-            Database.getActiveDb().writeBackLocalCopyToDiskAndRemove(txId);
-            Database.getActiveDb().swapMaster();
+            Database.get().writeBackLocalCopyToDiskAndRemove(txId);
+            Database.get().swapMaster();
             return true;
         } catch (DatabaseException e) {
             Logger.print().error(e.getMessage(), "ResourceManagerImpl");
@@ -56,13 +55,13 @@ public class ResourceManagerImpl implements RemoteRevertibleResourceManager {
 
 
     private void removeData(int id, String key) {
-        Database.getActiveDb().removeData(id, key);
+        Database.get().removeData(id, key);
     }
     private RMItem readData(int id, String key) {
-        return Database.getActiveDb().readData(id, key);
+        return Database.get().readData(id, key);
     }
     private void writeData(int id, String key, RMItem value) {
-        Database.getActiveDb().writeData(id, key, value);
+        Database.get().writeData(id, key, value);
     }
 
 
@@ -141,13 +140,13 @@ public class ResourceManagerImpl implements RemoteRevertibleResourceManager {
     // query the price of an item
     private int queryPrice(int id, String key) {
         long start = System.currentTimeMillis();
-        Trace.info("RM::queryCarsPrice(" + id + ", " + key + ") called");
+        Trace.info("RM::queryPrice(" + id + ", " + key + ") called");
         ReservableItem curObj = (ReservableItem) readData(id, key);
         int value = 0;
         if (curObj != null) {
             value = curObj.getPrice();
         } // else
-        Trace.info("RM::queryCarsPrice(" + id + ", " + key + ") returns cost=$" + value);
+        Trace.info("RM::queryPrice(" + id + ", " + key + ") returns cost=$" + value);
         RMStatistics.instance.getAverageExecutionTime().addValue(System.currentTimeMillis() - start);
         return value;
     }

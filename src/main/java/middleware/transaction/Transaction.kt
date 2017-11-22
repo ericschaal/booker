@@ -10,7 +10,7 @@ import java.util.*
 
 class Transaction : Serializable {
 
-    var id : Int
+    var id: Int
     private var involved: Array<RemoteRevertibleResourceManager?> = Array(4, { null })
     private var timer: Timer
 
@@ -31,37 +31,40 @@ class Transaction : Serializable {
     }
 
     fun commit() {
+        try {
+            involved.forEach {
+                it?.commitTransaction(id)
+            }
 
-        involved.forEach {
-            it?.commitTransaction(id)
+            Logger.print().info("Commit sent", "Transaction:" + id)
+        } finally {
+            LockManager.get().UnlockAll(id)
+
+            timer.cancel()
+            timer.purge()
         }
 
-        LockManager.get().UnlockAll(id)
-
-        timer.cancel()
-        timer.purge()
-
-
-        Logger.print().info("Commit sent", "Transaction:" + id)
 
     }
 
     fun abort() { //TODO abort procedure.
 
+        try {
 
-        involved.forEach {
-            it?.abortTransaction(id)
+            involved.forEach {
+                it?.abortTransaction(id)
+            }
+
+            Logger.print().info("Abort sent", "Transaction:" + id)
+
+        } finally {
+            LockManager.get().UnlockAll(id)
+
+            timer.cancel()
+            timer.purge()
         }
 
-        LockManager.get().UnlockAll(id)
-
-        timer.cancel()
-        timer.purge()
-
-        Logger.print().info("Abort sent", "Transaction:" + id)
-
     }
-
 
 
 }

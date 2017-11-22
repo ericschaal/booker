@@ -6,6 +6,7 @@ import common.resource.RMI;
 import common.resource.RemoteRevertibleResourceManager;
 import common.resource.Resource;
 import resourceManager.io.RMIOManager;
+import resourceManager.storage.Database;
 
 import java.io.IOException;
 import java.rmi.AlreadyBoundException;
@@ -20,6 +21,7 @@ public class EndpointRM {
 
         // Persistence Setup
         RMIOManager.init("./data/", resource);
+        Database.init();
 
         if (System.getSecurityManager() == null) {
             System.setSecurityManager(new SecurityManager());

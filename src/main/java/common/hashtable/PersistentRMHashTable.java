@@ -15,7 +15,8 @@ public class PersistentRMHashTable extends RMHashtable {
             rmHashtable =  RMIOManager.getInstance().readDB(id);
         } catch (Exception e) {
             rmHashtable = new RMHashtable();
-            Logger.print().warning("Initializing fresh database.");
+            RMIOManager.getInstance().writeDatabase(id, rmHashtable);
+            Logger.print().warning("Initializing fresh database.", "PersistentRMHashTable " + id);
         }
     }
 
@@ -35,7 +36,7 @@ public class PersistentRMHashTable extends RMHashtable {
         try {
             RMIOManager.getInstance().writeDatabase(id, rmHashtable);
         } catch (RMIOManagerException e) {
-            Logger.print().error("STOP! Data is probably corrupted!");
+            Logger.print().error("File System Error! Data is probably corrupted!", "PersistentRMHashTable");
         }
         return result;
     }
@@ -44,24 +45,33 @@ public class PersistentRMHashTable extends RMHashtable {
     public Object remove(Object key) {
         Object result = rmHashtable.remove(key);
         try {
+            Logger.print().info("Removing " + key + "from " + id + ".");
             RMIOManager.getInstance().writeDatabase(id, rmHashtable);
         } catch (RMIOManagerException e) {
-            Logger.print().error("STOP! Data is probably corrupted!");
+            Logger.print().error("File System Error! Data is probably corrupted!", "PersistentRMHashTable");
         }
         return result;
     }
 
-    public void setHT(RMHashtable old) {
-        rmHashtable = old;
-        try {
-            RMIOManager.getInstance().writeDatabase(id, rmHashtable);
-        } catch (RMIOManagerException e) {
-            Logger.print().error("STOP! Data is probably corrupted!");
-        }
+    @Override
+    public synchronized Object get(Object key) {
+        return rmHashtable.get(key);
     }
+
+//    public void setHT(RMHashtable old) {
+//        rmHashtable = old;
+//        try {
+//            RMIOManager.getInstance().writeDatabase(id, rmHashtable);
+//        } catch (RMIOManagerException e) {
+//            Logger.print().error("STOP! Data is probably corrupted!");
+//        }
+//    }
 
     public RMHashtable getHT() {
         return rmHashtable;
     }
 
+    public String getId() {
+        return id;
+    }
 }

@@ -15,10 +15,6 @@ public class TxLocalRMHashTable extends RMHashtable {
         return modifiedKeys.toArray();
     }
 
-    public RMHashtable getDb() {
-        return rmHashtable;
-    }
-
     @Override
     public synchronized Object put(Object key, Object value) {
         modifiedKeys.add(key);
@@ -29,6 +25,16 @@ public class TxLocalRMHashTable extends RMHashtable {
     public synchronized Object remove(Object key) {
         modifiedKeys.add(key);
         return rmHashtable.remove(key);
+    }
+
+    @Override
+    public synchronized Object get(Object key) {
+        return rmHashtable.get(key);
+    }
+
+    @Override
+    public synchronized boolean containsKey(Object key) {
+        return rmHashtable.containsKey(key);
     }
 
     @Override
