@@ -38,7 +38,7 @@ class Transaction : Serializable {
 
             val voteResult = involved.fold(true) { acc, element ->
                 if (element != null) {
-                    acc && element.voteRequest(id)
+                    acc && element.prepare(id)
                 } else true
             }
 

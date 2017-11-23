@@ -3,23 +3,28 @@ package resourceManager.tx;
 import common.io.Logger;
 import resourceManager.io.RMIOManager;
 import resourceManager.io.RMIOManagerException;
-import resourceManager.io.TxRecord;
-import resourceManager.io.TxRecordEntry;
 
 
 public class TxRecordManager {
 
     private TxRecord txRecord;
 
-    public TxRecordManager() throws RMIOManagerException {
+    public TxRecordManager() throws RMIOManagerException, ImproperShutdownException {
         try {
             txRecord = RMIOManager.getInstance().readTxRecord();
+
+            int[] pending = txRecord.checkPending();
+            if (pending.length != 0) {
+                throw new ImproperShutdownException(pending);
+            }
+
         } catch (Exception e) {
             txRecord = new TxRecord();
             RMIOManager.getInstance().writeTxRecord(txRecord);
             Logger.print().warning("Initializing fresh TX Record.", "TxRecordManager");
         }
     }
+
 
     public void newRecord(int txId) {
         txRecord.put(txId, new TxRecordEntry(txId));

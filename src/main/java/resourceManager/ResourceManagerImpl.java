@@ -23,7 +23,7 @@ public class ResourceManagerImpl implements EndPointResourceManager {
 
 
     @Override
-    public boolean voteRequest(int txId) throws RemoteException {
+    public boolean prepare(int txId) throws RemoteException {
         return TxManager.getInstance().voteRequest(txId);
     }
 
@@ -484,5 +484,10 @@ public class ResourceManagerImpl implements EndPointResourceManager {
                 System.exit(0);
             }
         }, 2000);
+    }
+
+    @Override
+    public boolean verify() throws RemoteException {
+        return true;
     }
 }

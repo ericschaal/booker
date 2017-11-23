@@ -1,10 +1,8 @@
 package common.resource;
 
-import common.resource.Resource;
-
 public class RMI {
 
-    private static final String prefix = "ERIC_SCHAAL_BOOKER_19789489.";
+    private static final String prefix = "ERIC_SCHAAL_BOOKER_260620894.";
 
     public static final String CAR = prefix + "CAR";
     public static final String CUSTOMER = prefix + "CUSTOMER";

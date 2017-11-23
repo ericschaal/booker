@@ -4,11 +4,11 @@ import common.hashtable.RMHashtable;
 import common.io.FileManager;
 import common.io.Logger;
 import common.resource.Resource;
+import resourceManager.tx.TxRecord;
 
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.util.Hashtable;
 
 public class RMIOManager {
 

@@ -68,6 +68,7 @@ public class Database implements Serializable {
     }
 
     private void setMaster(String id) throws RMIOManagerException {
+        Logger.print().info("Master set to " + id);
         master = id;
         RMIOManager.getInstance().setMaster(id);
     }
@@ -75,6 +76,7 @@ public class Database implements Serializable {
 
 
     public synchronized void newLocalCopy(int txId) {
+        Logger.print().info("New local copy for tx " + txId, "Database");
         txLocal.put(txId, new TxLocalRMHashTable(kryo.copy(getMaster().getHT())));
     }
 
@@ -109,6 +111,7 @@ public class Database implements Serializable {
     }
 
     public synchronized void swapMaster() throws DatabaseException {
+        Logger.print().info("Swapping Master Database.", "Database");
         try {
             if (master.equals(RMIOManager.DB_ONE)) {
                 RMIOManager.getInstance().setMaster(RMIOManager.DB_TWO);
@@ -121,6 +124,8 @@ public class Database implements Serializable {
         } catch (Exception e) {
             Logger.print().error(e.getMessage(), "Database");
             throw new DatabaseException("Failed to swap master");
+        } finally {
+            Logger.print().info("Master database swapped to " + master, "Database");
         }
     }
 

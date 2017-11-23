@@ -163,6 +163,10 @@ public class Client {
                     try {
                         Id = obj.getInt(arguments.elementAt(1));
                         int customer = rm.newCustomer(Id);
+                        if (customer == 0) {
+                            System.out.println("Failed to create customer");
+                            break;
+                        }
                         System.out.println("new customer id:" + customer);
                     } catch (Exception e) {
                         System.out.println("EXCEPTION:");
@@ -267,6 +271,10 @@ public class Client {
                         Id = obj.getInt(arguments.elementAt(1));
                         flightNum = obj.getInt(arguments.elementAt(2));
                         int seats = rm.queryFlight(Id, flightNum);
+                        if (seats == 0) {
+                            System.out.println("Flight doesn't exist");
+                            break;
+                        }
                         System.out.println("Number of seats available:" + seats);
                     } catch (Exception e) {
                         System.out.println("EXCEPTION:");
@@ -286,6 +294,10 @@ public class Client {
                         Id = obj.getInt(arguments.elementAt(1));
                         location = obj.getString(arguments.elementAt(2));
                         numCars = rm.queryCars(Id, location);
+                        if (numCars == 0) {
+                            System.out.println("Car location doesn't exist");
+                            break;
+                        }
                         System.out.println("number of Cars at this location:" + numCars);
                     } catch (Exception e) {
                         System.out.println("EXCEPTION:");
@@ -305,6 +317,10 @@ public class Client {
                         Id = obj.getInt(arguments.elementAt(1));
                         location = obj.getString(arguments.elementAt(2));
                         numRooms = rm.queryRooms(Id, location);
+                        if (numRooms == 0) {
+                            System.out.println("Room location doesn't exist");
+                            break;
+                        }
                         System.out.println("number of Rooms at this location:" + numRooms);
                     } catch (Exception e) {
                         System.out.println("EXCEPTION:");
@@ -324,6 +340,10 @@ public class Client {
                         Id = obj.getInt(arguments.elementAt(1));
                         int customer = obj.getInt(arguments.elementAt(2));
                         String bill = rm.queryCustomerInfo(Id, customer);
+                        if (bill.isEmpty()) {
+                            System.out.println("Customer doesn't exist");
+                            break;
+                        }
                         System.out.println("Customer info:" + bill);
                     } catch (Exception e) {
                         System.out.println("EXCEPTION:");
@@ -343,6 +363,10 @@ public class Client {
                         Id = obj.getInt(arguments.elementAt(1));
                         flightNum = obj.getInt(arguments.elementAt(2));
                         price = rm.queryFlightPrice(Id, flightNum);
+                        if (price == 0) {
+                            System.out.println("Flight doesn't exist");
+                            break;
+                        }
                         System.out.println("Price of a seat:" + price);
                     } catch (Exception e) {
                         System.out.println("EXCEPTION:");
@@ -362,6 +386,10 @@ public class Client {
                         Id = obj.getInt(arguments.elementAt(1));
                         location = obj.getString(arguments.elementAt(2));
                         price = rm.queryCarsPrice(Id, location);
+                        if (price == 0) {
+                            System.out.println("Car doesn't exist");
+                            break;
+                        }
                         System.out.println("Price of a car at this location:" + price);
                     } catch (Exception e) {
                         System.out.println("EXCEPTION:");
@@ -381,6 +409,10 @@ public class Client {
                         Id = obj.getInt(arguments.elementAt(1));
                         location = obj.getString(arguments.elementAt(2));
                         price = rm.queryRoomsPrice(Id, location);
+                        if (price == 0) {
+                            System.out.println("Room doesn't exist");
+                            break;
+                        }
                         System.out.println("Price of Rooms at this location:" + price);
                     } catch (Exception e) {
                         System.out.println("EXCEPTION:");
@@ -508,17 +540,7 @@ public class Client {
                         obj.wrongNumber();
                         break;
                     }
-                    System.out.println("Adding a new Customer using id:" + arguments.elementAt(1) + " and cid " + arguments.elementAt(2));
-                    try {
-                        Id = obj.getInt(arguments.elementAt(1));
-                        Cid = obj.getInt(arguments.elementAt(2));
-                        boolean customer = rm.newCustomer(Id, Cid);
-                        System.out.println("new customer id:" + Cid);
-                    } catch (Exception e) {
-                        System.out.println("EXCEPTION:");
-                        System.out.println(e.getMessage());
-                        e.printStackTrace();
-                    }
+                    System.out.println("Not implemented.");
                     break;
 
 

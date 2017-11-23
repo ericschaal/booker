@@ -10,7 +10,7 @@ public interface EndPointResourceManager extends RemoteResourceManager {
     boolean abortTransaction(int txId) throws RemoteException;
     boolean commitTransaction(int txId) throws RemoteException;
 
-    boolean voteRequest(int txId) throws RemoteException;
+    boolean prepare(int txId) throws RemoteException;
 
     boolean isCustomer(int id, int cid) throws  RemoteException;
     boolean addReservationToCustomer(int id, int cid, String key, String location, int price, Resource resource) throws RemoteException;
@@ -19,5 +19,7 @@ public interface EndPointResourceManager extends RemoteResourceManager {
     boolean freeFlight(int id, int flightNumber, int count) throws RemoteException;
     boolean freeCar(int id, String location, int count) throws RemoteException;
     boolean freeRoom(int id, String location, int count) throws RemoteException;
+
+    boolean verify() throws RemoteException;
 
 }

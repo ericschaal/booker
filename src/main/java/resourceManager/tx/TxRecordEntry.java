@@ -1,4 +1,4 @@
-package resourceManager.io;
+package resourceManager.tx;
 
 import common.tx.TxDecision;
 import common.tx.TxState;
@@ -47,4 +47,20 @@ public class TxRecordEntry implements Serializable {
     public TxState getState() {
         return state;
     }
+
+
+    public boolean isPending() throws UndecidableStateException {
+        if (state != null) return false;
+        else {
+            if (decision != TxDecision.YES) return true;
+            if (state == null) return true;
+            if (decision == TxDecision.YES) {
+                throw new UndecidableStateException("Cannot recover transaction " + id + " undecidable state.");
+            }
+            else {
+                throw new RuntimeException("Should never never never never ever happen!");
+            }
+        }
+    }
+
 }
