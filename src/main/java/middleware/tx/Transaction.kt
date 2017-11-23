@@ -1,4 +1,4 @@
-package middleware.transaction
+package middleware.tx
 
 import common.io.Logger
 import common.resource.EndPointResourceManager

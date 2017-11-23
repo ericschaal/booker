@@ -546,13 +546,13 @@ public class Client {
                     break;
 
 
-                case 23: // start a new transaction
+                case 23: // start a new tx
                     if (arguments.size() != 1) {
                         obj.wrongNumber();
                         break;
                     }
                     try {
-                        System.out.println("Starting a new transaction.");
+                        System.out.println("Starting a new tx.");
                         System.out.println("TxId: " + rm.startTx());
                     } catch (Exception e) {
                         System.out.println("EXCEPTION:");
@@ -562,14 +562,14 @@ public class Client {
                     break;
 
 
-                case 24: // commits transaction
+                case 24: // commits tx
                     if (arguments.size() != 2) {
                         obj.wrongNumber();
                         break;
                     }
                     try {
                         Id = obj.getInt(arguments.elementAt(1));
-                        System.out.println("Committing transaction with id: " + Id + ".");
+                        System.out.println("Committing tx with id: " + Id + ".");
                         if (rm.commitTx(Id)) {
                             System.out.println("Commit successful");
                         } else {
@@ -583,14 +583,14 @@ public class Client {
                     break;
 
 
-                case 25: // aborts transaction
+                case 25: // aborts tx
                     if (arguments.size() != 2) {
                         obj.wrongNumber();
                         break;
                     }
                     try {
                         Id = obj.getInt(arguments.elementAt(1));
-                        System.out.println("Aborting transaction with id: " + Id + ".");
+                        System.out.println("Aborting tx with id: " + Id + ".");
                         if (rm.abortTx(Id)) {
                             System.out.println("Abort successful");
                         } else {

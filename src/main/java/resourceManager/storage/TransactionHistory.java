@@ -19,7 +19,7 @@ import java.util.Hashtable;
 //            Logger.print().info("Transaction " + txId + " aborted.", "TransactionHistory");
 //            return true;
 //        } else {
-//            Logger.print().warning("Trying to abort unknown transaction. Already committed/aborted?", "TransactionHistory");
+//            Logger.print().warning("Trying to abort unknown tx. Already committed/aborted?", "TransactionHistory");
 //            return false;
 //        }
 //    }
@@ -30,7 +30,7 @@ import java.util.Hashtable;
 //            Logger.print().info("Transaction " + txId + " committed. Removing from history.", "TransactionHistory");
 //            return true;
 //        } else {
-//            Logger.print().warning("Trying to commit unknown transaction. Already committed/aborted?", "TransactionHistory");
+//            Logger.print().warning("Trying to commit unknown tx. Already committed/aborted?", "TransactionHistory");
 //            return false;
 //        }
 //    }
@@ -38,9 +38,9 @@ import java.util.Hashtable;
 //    public void addToHistory(int txId, RMHashtable oldDb) {
 //        if (!liveTransactions.containsKey(txId)) {
 //            liveTransactions.put(txId, oldDb);
-//            Logger.print().info("New transaction added to history", "TransactionHistory");
+//            Logger.print().info("New tx added to history", "TransactionHistory");
 //        } else {
-//            Logger.print().error("Error! Double history for transaction!", "TransactionHistory");
+//            Logger.print().error("Error! Double history for tx!", "TransactionHistory");
 //        }
 //    }
 //

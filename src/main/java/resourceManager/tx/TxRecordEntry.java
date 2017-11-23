@@ -55,7 +55,7 @@ public class TxRecordEntry implements Serializable {
             if (decision != TxDecision.YES) return true;
             if (state == null) return true;
             if (decision == TxDecision.YES) {
-                throw new UndecidableStateException("Cannot recover transaction " + id + " undecidable state.");
+                throw new UndecidableStateException("Cannot recover tx " + id + " undecidable state.");
             }
             else {
                 throw new RuntimeException("Should never never never never ever happen!");

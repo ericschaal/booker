@@ -1,4 +1,4 @@
-package middleware.transaction;
+package middleware.tx;
 
 import middleware.lockManager.DeadlockException;
 

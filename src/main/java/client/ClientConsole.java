@@ -276,23 +276,23 @@ public class ClientConsole
                 System.out.println("\tnewcustomerid, <id>, <customerid>");
                 break;
             case 23:
-                System.out.println("Starts a new transaction");
+                System.out.println("Starts a new tx");
                 System.out.println("Purpose:");
-                System.out.println("\tStarts a new atomic transaction. Must be committed or aborted");
+                System.out.println("\tStarts a new atomic tx. Must be committed or aborted");
                 System.out.println("\nUsage:");
                 System.out.println("\tstart");
                 break;
             case 24:
-                System.out.println("Commits a transaction");
+                System.out.println("Commits a tx");
                 System.out.println("Purpose:");
-                System.out.println("\tCommits an atomic transaction. Must be inside a transaction");
+                System.out.println("\tCommits an atomic tx. Must be inside a tx");
                 System.out.println("\nUsage:");
                 System.out.println("\tcommit, txId");
                 break;
             case 25:
-                System.out.println("Aborts a transaction");
+                System.out.println("Aborts a tx");
                 System.out.println("Purpose:");
-                System.out.println("\tAborts an atomic transaction. Must be inside a transaction");
+                System.out.println("\tAborts an atomic tx. Must be inside a tx");
                 System.out.println("\nUsage:");
                 System.out.println("\tabort, txId");
                 break;

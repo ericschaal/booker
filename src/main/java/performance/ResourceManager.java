@@ -196,7 +196,7 @@ public class ResourceManager implements Serializable {
     /**
      * Creates a new customer and a new flight
      * Reserves flight and fails to reserve a car
-     * Failing transaction
+     * Failing tx
      * @throws RemoteException
      */
     private void tx4() throws RemoteException {

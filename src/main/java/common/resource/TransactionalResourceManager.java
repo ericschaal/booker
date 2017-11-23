@@ -1,13 +1,12 @@
 package common.resource;
 
-import common.resource.RemoteConcurrentResourceManager;
 import kotlin.Unit;
 import kotlin.jvm.functions.Function0;
 import middleware.MiddlewareResourceManager;
-import middleware.transaction.InvalidTransactionException;
-import middleware.transaction.TransactionAbortedException;
-import middleware.transaction.TransactionBody;
-import middleware.transaction.TransactionResult;
+import middleware.tx.InvalidTransactionException;
+import middleware.tx.TransactionAbortedException;
+import middleware.tx.TransactionBody;
+import middleware.tx.TransactionResult;
 import java.rmi.RemoteException;
 
 public interface TransactionalResourceManager extends RemoteConcurrentResourceManager {

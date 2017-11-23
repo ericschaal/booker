@@ -1,4 +1,4 @@
-package middleware.transaction
+package middleware.tx
 
 import common.io.Logger
 import common.resource.Resource
@@ -38,7 +38,7 @@ class TxManager {
 
             true
         } else {
-            Logger.print().warning("Setting enlist on unknown transaction with id " + txId, "TxManager")
+            Logger.print().warning("Setting enlist on unknown tx with id " + txId, "TxManager")
             false
         }
     }

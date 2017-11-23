@@ -1,4 +1,4 @@
-package middleware.transaction;
+package middleware.tx;
 
 public class InvalidTransactionException extends Exception {
     public InvalidTransactionException() {

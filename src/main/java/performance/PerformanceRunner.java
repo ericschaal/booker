@@ -77,7 +77,7 @@ public class PerformanceRunner {
     private void printLocalStats() {
         Logger.print().statement("-----------------------STATISTICS-----------------------");
         System.out.println("-----------------------");
-        System.out.println("Average Execution time per transaction number");
+        System.out.println("Average Execution time per tx number");
         for (int i = 0; i < TXCOUNT; i++) {
             Logger.print().statement("-----------------------");
             Logger.print().statement("", String.valueOf(i));

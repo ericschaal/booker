@@ -17,7 +17,7 @@ import middleware.lockManager.DeadlockException;
 import middleware.lockManager.LockManager;
 import middleware.perf.MiddlewareStatistics;
 import middleware.rmi.RMIManager;
-import middleware.transaction.*;
+import middleware.tx.*;
 
 public class MiddlewareResourceManager implements TransactionalResourceManager {
 
@@ -33,7 +33,7 @@ public class MiddlewareResourceManager implements TransactionalResourceManager {
     private void lockAndEnlist(int transactionId, int lockLevel, Resource resource) throws DeadlockException, InvalidTransactionException {
         if (transactionId >= 0) {
             if (!globalTxManager.transactionExists(transactionId))
-                throw new InvalidTransactionException("Transaction doesn't exist. Use id:-1 to run out of a transaction.");
+                throw new InvalidTransactionException("Transaction doesn't exist. Use id:-1 to run out of a tx.");
             LockManager.get().Lock(transactionId, resource.name(), lockLevel);
             globalTxManager.enlist(transactionId, resource);
         }

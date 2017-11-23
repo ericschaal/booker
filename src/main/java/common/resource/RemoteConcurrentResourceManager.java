@@ -1,7 +1,7 @@
 package common.resource;
 
 import middleware.lockManager.DeadlockException;
-import middleware.transaction.InvalidTransactionException;
+import middleware.tx.InvalidTransactionException;
 
 import java.rmi.Remote;
 import java.rmi.RemoteException;
