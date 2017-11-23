@@ -487,7 +487,5 @@ public class ResourceManagerImpl implements EndPointResourceManager {
     }
 
     @Override
-    public boolean verify() throws RemoteException {
-        return true;
-    }
+    public void verify() throws RemoteException { }
 }

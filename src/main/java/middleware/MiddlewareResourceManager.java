@@ -397,4 +397,7 @@ public class MiddlewareResourceManager implements TransactionalResourceManager {
     public EndPointResourceManager getRoomRM() {
         return RMIManager.roomRm();
     }
+
+    @Override
+    public void verify() throws RemoteException { }
 }

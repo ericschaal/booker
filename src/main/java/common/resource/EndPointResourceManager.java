@@ -20,6 +20,6 @@ public interface EndPointResourceManager extends RemoteResourceManager {
     boolean freeCar(int id, String location, int count) throws RemoteException;
     boolean freeRoom(int id, String location, int count) throws RemoteException;
 
-    boolean verify() throws RemoteException;
+    void verify() throws RemoteException;
 
 }

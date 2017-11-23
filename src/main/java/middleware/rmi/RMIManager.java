@@ -38,15 +38,19 @@ public class RMIManager {
         try {
             switch (r) {
                 case CAR:
+                    if (carRm == null) return false;
                     carRm.verify();
                     break;
                 case ROOM:
+                    if (roomRm == null) return false;
                     roomRm.verify();
                     break;
                 case FLIGHT:
+                    if (flightRm == null) return false;
                     flightRm.verify();
                     break;
                 case CUSTOMER:
+                    if (customerRm == null) return false;
                     customerRm.verify();
                     break;
             }
@@ -56,7 +60,7 @@ public class RMIManager {
         }
     }
 
-    private boolean connectTo(Resource r) {
+    private void tryConnectTo(Resource r) {
         try {
             switch (r) {
                 case CAR:
@@ -77,16 +81,15 @@ public class RMIManager {
                 Logger.print().info("Connected to RM " + r, "RMIManager");
             }
 
-            return true;
         } catch (Exception e) {
             Logger.print().error("Failed to reconnect to RM " + r.name(), "RMIManager");
-            return false;
         }
     }
 
     private RMIManager(MiddlewareConfig config) throws RemoteException {
 
         Logger.print().info("RM Registry Lookup", "RMIManager");
+
         carRegistry = LocateRegistry.getRegistry(config.getCarRegistryAddress().getIp(), config.getCarRegistryAddress().getPort());
         customerRegistry = LocateRegistry.getRegistry(config.getCustomerRegistryAddress().getIp(), config.getCustomerRegistryAddress().getPort());
         flightRegistry = LocateRegistry.getRegistry(config.getFlightRegistryAddress().getIp(), config.getFlightRegistryAddress().getPort());
@@ -95,23 +98,25 @@ public class RMIManager {
 
 
         Logger.print().info("Connecting to RMs", "RMIManager");
-        connectTo(Resource.CAR);
-        connectTo(Resource.FLIGHT);
-        connectTo(Resource.CUSTOMER);
-        connectTo(Resource.ROOM);
 
-        if (carRm == null || flightRm == null || customerRm == null || roomRm == null) {
-            Logger.print().error("Failed to connect to RMs", "RMIManager");
-            System.exit(1);
+        tryConnectTo(Resource.CAR);
+        tryConnectTo(Resource.FLIGHT);
+        tryConnectTo(Resource.CUSTOMER);
+        tryConnectTo(Resource.ROOM);
+
+
+
+        if (this.carRm == null || this.flightRm == null || this.roomRm == null || this.customerRm == null) {
+            throw new RemoteException("Failed to start");
         }
 
-        Logger.print().statement("Connected to RMs.", "RMIManager");
 
         Logger.print().info("Binding to Registry", "RMIManager");
         MiddlewareResourceManager obj = new MiddlewareResourceManager();
         TransactionalResourceManager rm = (TransactionalResourceManager) UnicastRemoteObject.exportObject(obj, 0);
 
         middlewareRegistry.rebind(RMI.MIDDLEWARE, rm);
+
 
 
         Logger.print().statement("Bind successful.", "RMIManager");
@@ -124,11 +129,11 @@ public class RMIManager {
                     if (!verify(r)) {
                         Logger.print().error("RM " + r.name() + " is down.", "RMIManager");
                         Logger.print().info("Trying to reconnect to RM " + r);
-                        connectTo(r);
+                        tryConnectTo(r);
                     }
                 }
             }
-        }, 6*1000, 3 * 1000);
+        }, 0, 3 * 1000);
     }
 
     public static void init(MiddlewareConfig config) throws RemoteException {

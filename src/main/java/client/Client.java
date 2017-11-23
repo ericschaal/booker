@@ -1,5 +1,6 @@
 package client;
 
+import client.rmi.RMIManager;
 import common.io.Logger;
 import common.net.NetworkAddress;
 import common.resource.RMI;
@@ -37,17 +38,18 @@ public class Client {
     String location;
 
     public Client(NetworkAddress registryAddress) throws RemoteException, NotBoundException {
-        Registry registry = LocateRegistry.getRegistry(registryAddress.getIp(), registryAddress.getPort());
-        TransactionalResourceManager resourceManager = (TransactionalResourceManager) registry.lookup(RMI.MIDDLEWARE);
 
-        if (resourceManager != null) {
-            this.rm = new ResourceManager(resourceManager);
-            this.obj = new ClientConsole();
-
-            Logger.print().statement("Client ready");
-        } else {
-            Logger.print().error("Client failed to connect to Middleware.");
+        try {
+            RMIManager.init(registryAddress);
+        } catch (RemoteException e) {
+            Logger.print().error("Failed to connect to middleware.");
+            System.exit(1);
         }
+
+        this.rm = new ResourceManager();
+        this.obj = new ClientConsole();
+
+        Logger.print().statement("Client ready");
 
     }
 
@@ -607,6 +609,7 @@ public class Client {
                         Timer shutdownCountDown = new Timer();
                         shutdownCountDown.scheduleAtFixedRate(new TimerTask() {
                             int count = 4;
+
                             @Override
                             public void run() {
                                 System.out.println("Shutting down " + count--);

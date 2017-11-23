@@ -6,6 +6,7 @@ import middleware.config.MiddlewareConfig;
 import middleware.io.MiddlewareIOManager;
 import middleware.rmi.RMIManager;
 
+import java.io.IOException;
 import java.rmi.AlreadyBoundException;
 import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
@@ -14,14 +15,13 @@ import java.rmi.RemoteException;
 public class Middleware {
 
 
-    public Middleware(MiddlewareConfig config) throws RemoteException, AlreadyBoundException, NotBoundException {
+    public Middleware(MiddlewareConfig config) throws AlreadyBoundException, NotBoundException, IOException {
 
-        RMIManager.init(config);
+        try {
+            MiddlewareIOManager.init("./data");
+            RMIManager.init(config);
 
-        MiddlewareIOManager ioManager = new MiddlewareIOManager("./data/");
-
-
-        if (RMIManager.carRm() == null || RMIManager.flightRm() == null || RMIManager.customerRm() == null || RMIManager.roomRm() == null) {
+        } catch (RemoteException e) {
             Logger.print().error("Failed to connect to RMs");
             System.exit(1);
         }

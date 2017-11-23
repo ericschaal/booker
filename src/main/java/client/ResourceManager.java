@@ -1,8 +1,8 @@
 package client;
 
+import client.rmi.RMIManager;
 import common.io.Logger;
 import common.resource.RemoteResourceManager;
-import common.resource.TransactionalResourceManager;
 import middleware.lockManager.DeadlockException;
 import middleware.transaction.InvalidTransactionException;
 import middleware.transaction.TransactionAbortedException;
@@ -12,20 +12,18 @@ import java.rmi.RemoteException;
 import java.util.Vector;
 
 public class ResourceManager implements RemoteResourceManager {
+    
 
-    private final TransactionalResourceManager rm;
-
-    public ResourceManager(TransactionalResourceManager rm) {
-        this.rm = rm;
+    public ResourceManager() {
     }
 
     public int startTx() throws RemoteException {
-        return rm.newTransaction();
+        return RMIManager.rm().newTransaction();
     }
 
     public boolean commitTx(int txId) throws RemoteException, InvalidTransactionException {
         try {
-            rm.commitTransaction(txId);
+            RMIManager.rm().commitTransaction(txId);
             Logger.print().info("Transaction " + txId + " committed", "ResourceManager");
             return true;
         } catch (InvalidTransactionException e) {
@@ -39,7 +37,7 @@ public class ResourceManager implements RemoteResourceManager {
 
     public boolean abortTx(int txId) throws RemoteException, InvalidTransactionException {
         try {
-            rm.abortTransaction(txId);
+            RMIManager.rm().abortTransaction(txId);
             Logger.print().info("Transaction " + txId + " aborted", "ResourceManager");
             return true;
         } catch (InvalidTransactionException e) {
@@ -51,7 +49,7 @@ public class ResourceManager implements RemoteResourceManager {
     @Override
     public boolean addFlight(int id, int flightNum, int flightSeats, int flightPrice) throws RemoteException {
         try {
-            return rm.addFlight(id, flightNum, flightSeats, flightPrice);
+            return RMIManager.rm().addFlight(id, flightNum, flightSeats, flightPrice);
         } catch (DeadlockException e) {
             Logger.print().warning("Deadlock.");
             return false;
@@ -64,7 +62,7 @@ public class ResourceManager implements RemoteResourceManager {
     @Override
     public boolean addCars(int id, String location, int numCars, int price) throws RemoteException {
         try {
-            return rm.addCars(id, location, numCars, price);
+            return RMIManager.rm().addCars(id, location, numCars, price);
         } catch (DeadlockException e) {
             Logger.print().warning("Deadlock.");
             return false;
@@ -77,7 +75,7 @@ public class ResourceManager implements RemoteResourceManager {
     @Override
     public boolean addRooms(int id, String location, int numRooms, int price) throws RemoteException {
         try {
-            return rm.addRooms(id, location, numRooms, price);
+            return RMIManager.rm().addRooms(id, location, numRooms, price);
         } catch (DeadlockException e) {
             Logger.print().warning("Deadlock.");
             return false;
@@ -90,13 +88,13 @@ public class ResourceManager implements RemoteResourceManager {
     @Override
     public int newCustomer(int id) throws RemoteException {
         try {
-            return rm.newCustomer(id);
+            return RMIManager.rm().newCustomer(id);
         } catch (DeadlockException e) {
             Logger.print().warning("Deadlock.");
-            return -1;
+            return 0;
         } catch (InvalidTransactionException e) {
             Logger.print().error(e.getMessage());
-            return -1;
+            return 0;
         }
     }
 
@@ -109,7 +107,7 @@ public class ResourceManager implements RemoteResourceManager {
     @Override
     public boolean deleteFlight(int id, int flightNum) throws RemoteException {
         try {
-            return rm.deleteFlight(id, flightNum);
+            return RMIManager.rm().deleteFlight(id, flightNum);
         } catch (DeadlockException e) {
             Logger.print().warning("Deadlock.");
             return false;
@@ -122,7 +120,7 @@ public class ResourceManager implements RemoteResourceManager {
     @Override
     public boolean deleteCars(int id, String location) throws RemoteException {
         try {
-            return rm.deleteCars(id, location);
+            return RMIManager.rm().deleteCars(id, location);
         } catch (DeadlockException e) {
             Logger.print().warning("Deadlock.");
             return false;
@@ -135,7 +133,7 @@ public class ResourceManager implements RemoteResourceManager {
     @Override
     public boolean deleteRooms(int id, String location) throws RemoteException {
         try {
-            return rm.deleteRooms(id, location);
+            return RMIManager.rm().deleteRooms(id, location);
         } catch (DeadlockException e) {
             Logger.print().warning("Deadlock.");
             return false;
@@ -148,7 +146,7 @@ public class ResourceManager implements RemoteResourceManager {
     @Override
     public boolean deleteCustomer(int id, int customer) throws RemoteException {
         try {
-            return rm.deleteCustomer(id, customer);
+            return RMIManager.rm().deleteCustomer(id, customer);
         } catch (DeadlockException e) {
             Logger.print().warning("Deadlock.");
             return false;
@@ -161,7 +159,7 @@ public class ResourceManager implements RemoteResourceManager {
     @Override
     public int queryFlight(int id, int flightNumber) throws RemoteException {
         try {
-            return rm.queryFlight(id, flightNumber);
+            return RMIManager.rm().queryFlight(id, flightNumber);
         } catch (DeadlockException e) {
             Logger.print().warning("Deadlock.");
             return 0;
@@ -174,7 +172,7 @@ public class ResourceManager implements RemoteResourceManager {
     @Override
     public int queryCars(int id, String location) throws RemoteException {
         try {
-            return rm.queryCars(id, location);
+            return RMIManager.rm().queryCars(id, location);
         } catch (DeadlockException e) {
             Logger.print().warning("Deadlock.");
             return 0;
@@ -187,7 +185,7 @@ public class ResourceManager implements RemoteResourceManager {
     @Override
     public int queryRooms(int id, String location) throws RemoteException {
         try {
-            return rm.queryRooms(id, location);
+            return RMIManager.rm().queryRooms(id, location);
         } catch (DeadlockException e) {
             Logger.print().warning("Deadlock.");
             return 0;
@@ -200,7 +198,7 @@ public class ResourceManager implements RemoteResourceManager {
     @Override
     public String queryCustomerInfo(int id, int customer) throws RemoteException {
         try {
-            return rm.queryCustomerInfo(id, customer);
+            return RMIManager.rm().queryCustomerInfo(id, customer);
         } catch (DeadlockException e) {
             Logger.print().warning("Deadlock.");
             return "";
@@ -213,7 +211,7 @@ public class ResourceManager implements RemoteResourceManager {
     @Override
     public int queryFlightPrice(int id, int flightNumber) throws RemoteException {
         try {
-            return rm.queryFlightPrice(id, flightNumber);
+            return RMIManager.rm().queryFlightPrice(id, flightNumber);
         } catch (DeadlockException e) {
             Logger.print().warning("Deadlock.");
             return 0;
@@ -226,7 +224,7 @@ public class ResourceManager implements RemoteResourceManager {
     @Override
     public int queryCarsPrice(int id, String location) throws RemoteException {
         try {
-            return rm.queryCarsPrice(id, location);
+            return RMIManager.rm().queryCarsPrice(id, location);
         } catch (DeadlockException e) {
             Logger.print().warning("Deadlock.");
             return 0;
@@ -239,7 +237,7 @@ public class ResourceManager implements RemoteResourceManager {
     @Override
     public int queryRoomsPrice(int id, String location) throws RemoteException {
         try {
-            return rm.queryRoomsPrice(id, location);
+            return RMIManager.rm().queryRoomsPrice(id, location);
         } catch (DeadlockException e) {
             Logger.print().warning("Deadlock.");
             return 0;
@@ -252,7 +250,7 @@ public class ResourceManager implements RemoteResourceManager {
     @Override
     public boolean reserveFlight(int id, int customer, int flightNumber) throws RemoteException {
         try {
-            return rm.reserveFlight(id, customer, flightNumber);
+            return RMIManager.rm().reserveFlight(id, customer, flightNumber);
         } catch (DeadlockException e) {
             Logger.print().warning("Deadlock.");
             return false;
@@ -265,7 +263,7 @@ public class ResourceManager implements RemoteResourceManager {
     @Override
     public boolean reserveCar(int id, int customer, String location) throws RemoteException {
         try {
-            return rm.reserveCar(id, customer, location);
+            return RMIManager.rm().reserveCar(id, customer, location);
         } catch (DeadlockException e) {
             Logger.print().warning("Deadlock.");
             return false;
@@ -278,7 +276,7 @@ public class ResourceManager implements RemoteResourceManager {
     @Override
     public boolean reserveRoom(int id, int customer, String location) throws RemoteException {
         try {
-            return rm.reserveRoom(id, customer, location);
+            return RMIManager.rm().reserveRoom(id, customer, location);
         } catch (DeadlockException e) {
             Logger.print().warning("Deadlock.");
             return false;
@@ -291,7 +289,7 @@ public class ResourceManager implements RemoteResourceManager {
     @Override
     public boolean itinerary(int id, int customer, Vector flightNumbers, String location, boolean Car, boolean Room) throws RemoteException {
         try {
-            return rm.itinerary(id, customer, flightNumbers, location, Car, Room);
+            return RMIManager.rm().itinerary(id, customer, flightNumbers, location, Car, Room);
         } catch (DeadlockException e) {
             Logger.print().warning("Deadlock.");
             return false;
@@ -303,6 +301,6 @@ public class ResourceManager implements RemoteResourceManager {
 
     @Override
     public void shutdown() throws RemoteException {
-        rm.shutdown();
+        RMIManager.rm().shutdown();
     }
 }

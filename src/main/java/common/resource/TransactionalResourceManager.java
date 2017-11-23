@@ -19,4 +19,6 @@ public interface TransactionalResourceManager extends RemoteConcurrentResourceMa
     int newTransaction() throws RemoteException;
 
     TransactionResult runInTransaction(TransactionBody<MiddlewareResourceManager, Integer, TransactionResult, Function0<Unit>, TransactionResult> body) throws RemoteException;
+
+    void verify() throws RemoteException;
 }
