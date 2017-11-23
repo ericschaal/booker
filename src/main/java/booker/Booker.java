@@ -62,7 +62,7 @@ public class Booker {
         new Client(registry).startConsole();
     }
 
-    public static void startMiddleware(MiddlewareConfig config) throws RemoteException, NotBoundException, AlreadyBoundException {
+    public static void startMiddleware(MiddlewareConfig config) throws NotBoundException, AlreadyBoundException, IOException {
         new Middleware(config);
     }
 
