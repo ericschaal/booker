@@ -15,9 +15,9 @@ import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.rmi.server.UnicastRemoteObject;
 
-public class EndpointRM {
+public class RM {
 
-    public EndpointRM(NetworkAddress registryAddress, Resource resource) throws IOException, AlreadyBoundException {
+    public RM(NetworkAddress registryAddress, Resource resource) throws IOException, AlreadyBoundException {
 
 
         // Persistence Setup

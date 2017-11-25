@@ -4,7 +4,7 @@ import common.hashtable.RMHashtable;
 import common.io.FileManager;
 import common.io.Logger;
 import common.resource.Resource;
-import resourceManager.tx.TxRecord;
+import resourceManager.tx.persistent.TxRecord;
 
 import java.io.IOException;
 import java.nio.file.Files;

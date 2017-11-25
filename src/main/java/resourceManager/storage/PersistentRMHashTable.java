@@ -1,5 +1,6 @@
-package common.hashtable;
+package resourceManager.storage;
 
+import common.hashtable.RMHashtable;
 import common.io.Logger;
 import resourceManager.io.RMIOManager;
 import resourceManager.io.RMIOManagerException;

@@ -1,6 +1,8 @@
-package middleware.tx;
+package middleware.tx.model;
 
 import middleware.lockManager.DeadlockException;
+import middleware.tx.error.InvalidTransactionException;
+import middleware.tx.error.TransactionAbortedException;
 
 import java.io.Serializable;
 import java.rmi.RemoteException;

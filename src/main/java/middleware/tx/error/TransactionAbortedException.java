@@ -1,4 +1,4 @@
-package middleware.tx;
+package middleware.tx.error;
 
 import java.io.Serializable;
 

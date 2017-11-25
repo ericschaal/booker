@@ -18,6 +18,10 @@ import middleware.lockManager.LockManager;
 import middleware.perf.MiddlewareStatistics;
 import middleware.rmi.RMIManager;
 import middleware.tx.*;
+import middleware.tx.error.InvalidTransactionException;
+import middleware.tx.error.TransactionAbortedException;
+import middleware.tx.model.TransactionBody;
+import middleware.tx.model.TransactionResult;
 
 public class MiddlewareResourceManager implements TransactionalResourceManager {
 
@@ -25,8 +29,12 @@ public class MiddlewareResourceManager implements TransactionalResourceManager {
 
 
     public MiddlewareResourceManager() {
-
         this.globalTxManager = new TxManager(this, 3 * 60 * 1000 /* 3 minutes */);
+    }
+
+
+    public void healthCheck() {
+        globalTxManager.healthCheck();
     }
 
 
@@ -40,13 +48,27 @@ public class MiddlewareResourceManager implements TransactionalResourceManager {
     }
 
     @Override
-    public void commitTransaction(int txId) throws RemoteException, InvalidTransactionException, TransactionAbortedException {
-        if (!globalTxManager.commitTransaction(txId)) throw new InvalidTransactionException();
+    public boolean commitTransaction(int txId) throws RemoteException, InvalidTransactionException, TransactionAbortedException {
+        try {
+            if (!globalTxManager.commitTransaction(txId, true)) {
+                throw new InvalidTransactionException();
+            } else return true;
+        } catch (RemoteException e) {
+            return false;
+        }
     }
 
     @Override
-    public void abortTransaction(int txId) throws RemoteException, InvalidTransactionException {
-        if (!globalTxManager.abortTransaction(txId)) throw new InvalidTransactionException();
+    public boolean abortTransaction(int txId) throws RemoteException, InvalidTransactionException {
+        try {
+            if (!globalTxManager.abortTransaction(txId, true)) {
+                throw new InvalidTransactionException();
+            } else {
+                return true;
+            }
+        } catch (RemoteException e) {
+            return false;
+        }
     }
 
     @Override
@@ -399,5 +421,6 @@ public class MiddlewareResourceManager implements TransactionalResourceManager {
     }
 
     @Override
-    public void verify() throws RemoteException { }
+    public void verify() throws RemoteException {
+    }
 }

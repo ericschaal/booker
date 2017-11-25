@@ -4,8 +4,8 @@ import client.rmi.RMIManager;
 import common.io.Logger;
 import common.resource.RemoteResourceManager;
 import middleware.lockManager.DeadlockException;
-import middleware.tx.InvalidTransactionException;
-import middleware.tx.TransactionAbortedException;
+import middleware.tx.error.InvalidTransactionException;
+import middleware.tx.error.TransactionAbortedException;
 
 
 import java.rmi.RemoteException;
@@ -23,9 +23,7 @@ public class ResourceManager implements RemoteResourceManager {
 
     public boolean commitTx(int txId) throws RemoteException, InvalidTransactionException {
         try {
-            RMIManager.rm().commitTransaction(txId);
-            Logger.print().info("Transaction " + txId + " committed", "ResourceManager");
-            return true;
+            return RMIManager.rm().commitTransaction(txId);
         } catch (InvalidTransactionException e) {
             Logger.print().error("Not a valid tx. Start a tx before committing.", "ResourceManager");
             return false;
@@ -37,9 +35,7 @@ public class ResourceManager implements RemoteResourceManager {
 
     public boolean abortTx(int txId) throws RemoteException, InvalidTransactionException {
         try {
-            RMIManager.rm().abortTransaction(txId);
-            Logger.print().info("Transaction " + txId + " aborted", "ResourceManager");
-            return true;
+            return RMIManager.rm().abortTransaction(txId);
         } catch (InvalidTransactionException e) {
             Logger.print().error("Not a valid tx. Start a tx before aborting.");
             return false;

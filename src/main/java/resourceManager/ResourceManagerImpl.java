@@ -5,12 +5,10 @@
 package resourceManager;
 
 import common.hashtable.RMHashtable;
-import common.io.Logger;
 import common.io.Trace;
 import common.resource.*;
 import resourceManager.perf.RMStatistics;
 import resourceManager.storage.Database;
-import resourceManager.storage.DatabaseException;
 import resourceManager.tx.TxManager;
 
 import java.util.*;
@@ -24,7 +22,7 @@ public class ResourceManagerImpl implements EndPointResourceManager {
 
     @Override
     public boolean prepare(int txId) throws RemoteException {
-        return TxManager.getInstance().voteRequest(txId);
+        return TxManager.getInstance().prepare(txId);
     }
 
     public void newTransaction(int txId) throws RemoteException {

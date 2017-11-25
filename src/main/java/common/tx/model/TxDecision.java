@@ -1,7 +1,7 @@
-package common.tx;
+package common.tx.model;
 
 import java.io.Serializable;
 
 public enum TxDecision implements Serializable {
-    YES, NO
+    COMMIT,ABORT
 }

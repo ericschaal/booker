@@ -1,8 +1,6 @@
 package resourceManager.storage;
 
 import com.esotericsoftware.kryo.Kryo;
-import common.hashtable.PersistentRMHashTable;
-import common.hashtable.RMHashtable;
 import common.hashtable.TxLocalRMHashTable;
 import common.io.Logger;
 import common.resource.RMItem;
@@ -78,6 +76,10 @@ public class Database implements Serializable {
     public synchronized void newLocalCopy(int txId) {
         Logger.print().info("New local copy for tx " + txId, "Database");
         txLocal.put(txId, new TxLocalRMHashTable(kryo.copy(getMaster().getHT())));
+    }
+
+    public synchronized boolean isLocalCopyAvailable(int txId) {
+        return txLocal.containsKey(txId);
     }
 
     /**

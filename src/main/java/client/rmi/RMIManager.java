@@ -3,11 +3,14 @@ package client.rmi;
 import common.io.Logger;
 import common.net.NetworkAddress;
 import common.resource.RMI;
+import common.resource.Resource;
 import common.resource.TransactionalResourceManager;
 
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
+import java.util.Timer;
+import java.util.TimerTask;
 
 public class RMIManager {
 
@@ -15,6 +18,7 @@ public class RMIManager {
 
     private Registry registry;
     private TransactionalResourceManager resourceManager;
+    private Timer ttl = new Timer();
 
 
     private void tryConnect() {
@@ -48,6 +52,16 @@ public class RMIManager {
 
         if (resourceManager == null) throw new RemoteException("Failed to start");
 
+        ttl.scheduleAtFixedRate(new TimerTask() {
+            @Override
+            public void run() {
+                    if (!verify()) {
+                        Logger.print().error("Middleware is down.", "RMIManager");
+                        Logger.print().info("Trying to reconnect to Middleware ");
+                        tryConnect();
+                }
+            }
+        }, 0, 3 * 1000);
     }
 
     public static void init(NetworkAddress registryAddress) throws RemoteException {

@@ -1,4 +1,4 @@
-package middleware.tx;
+package middleware.tx.model;
 
 import java.io.Serializable;
 

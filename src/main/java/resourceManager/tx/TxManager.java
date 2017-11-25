@@ -1,10 +1,14 @@
 package resourceManager.tx;
 
 import common.io.Logger;
+import common.tx.error.ImproperShutdownException;
+import common.tx.error.UndecidableStateException;
 import resourceManager.io.RMIOManagerException;
 import resourceManager.perf.RMStatistics;
 import resourceManager.storage.Database;
 import resourceManager.storage.DatabaseException;
+import resourceManager.tx.persistent.TxRecordException;
+import resourceManager.tx.persistent.TxRecordManager;
 
 
 public class TxManager {
@@ -15,15 +19,34 @@ public class TxManager {
 
 
     public TxManager() {
-        try {
-            this.recordManager = new TxRecordManager();
-        } catch (RMIOManagerException e) {
-            Logger.print().error("File System Error! Please delete all files and try again.");
-            e.printStackTrace();
-        } catch (ImproperShutdownException e) {
-            Logger.print().warning("Aborting pending transactions", "TXManager");
-            for (int txId : e.getPendingTransactions()) {
-                abortTransaction(txId);
+        int retryCount = 0;
+        while (true) {
+            try {
+                this.recordManager = new TxRecordManager();
+                break;
+            } catch (RMIOManagerException e) {
+                Logger.print().error("File System Error! Please delete all files and try again.");
+                e.printStackTrace();
+            } catch (ImproperShutdownException e) {
+                if (retryCount > 3) {
+                    throw new RuntimeException("Failed to recover transactions.");
+                }
+                e.getPendingTransactions().forEach((txId, action) -> {
+                    switch (action) {
+                        case ABORT:
+                            Logger.print().warning("Transaction " + txId + " needs to be aborted ", "TXManager");
+                            abortTransaction(txId);
+                            break;
+                        case COMMIT:
+                            Logger.print().warning("Transaction " + txId + " needs to be committed ", "TXManager");
+                            commitTransaction(txId);
+                            break;
+                    }
+                });
+                retryCount++;
+            } catch (UndecidableStateException e) {
+                Logger.print().error("Undecidable transaction state. Aborting start.");
+                e.printStackTrace();
             }
         }
     }
@@ -44,46 +67,74 @@ public class TxManager {
     }
 
     public void newTransaction(int txId) {
-        Logger.print().info("START_2PC " + txId, "TxManager");
         Database.get().newLocalCopy(txId);
-        recordManager.newRecord(txId);
     }
 
-    public boolean voteRequest(int txId) {
-        //TODO vote request
-        Logger.print().info("VOTE_REQ", "Tx: " + txId);
-        recordManager.setDecisionYes(txId);
-        return true;
+    public boolean prepare(int txId) {
+        try {
+            if (!recordManager.hasRecord(txId)) return false;
+            Logger.print().info("Adding new tx record " + txId, "TxManager");
+            recordManager.newRecord(txId);
+
+            //TODO vote request
+
+            if (Database.get().isLocalCopyAvailable(txId)) {
+                Logger.print().info("Setting tx record to YES", "Tx: " + txId);
+                recordManager.setDecisionYes(txId);
+                return true;
+            } else {
+                Logger.print().info("Setting tx record to NO", "Tx: " + txId);
+                recordManager.setDecisionNo(txId);
+                return false;
+            }
+        } catch (TxRecordException e) {
+            //ignore request
+            return false;
+        }
     }
 
     public boolean abortTransaction(int txId) {
-        Logger.print().info("ABORT" + txId, "TxManager");
-        long start = System.currentTimeMillis();
         try {
-            Database.get().removeTxLocalCopy(txId);
-            return true;
-        } catch (DatabaseException e) {
-            Logger.print().warning(e.getMessage(), "Tx: " + txId);
-            return true;
-        } finally {
-            RMStatistics.instance.getAverageAbortTime().addValue(System.currentTimeMillis() - start);
-            recordManager.setStatusAbort(txId);
+            if (!recordManager.hasRecord(txId)) return false;
+            Logger.print().info("ABORT received from middleware", "Tx: " + txId);
+            long start = System.currentTimeMillis();
+            try {
+                Database.get().removeTxLocalCopy(txId);
+                return true;
+            } catch (DatabaseException e) {
+                Logger.print().warning(e.getMessage(), "Tx: " + txId);
+                return true;
+            } finally {
+                Logger.print().info("Setting tx record to ABORT", "Tx: " + txId);
+                recordManager.setCommit(txId);
+                RMStatistics.instance.getAverageAbortTime().addValue(System.currentTimeMillis() - start);
+            }
+        } catch (TxRecordException e) {
+            //ignore request
+            return false;
         }
     }
 
     public boolean commitTransaction(int txId) {
-        Logger.print().info("COMMIT" + txId, "TxManager");
-        long start = System.currentTimeMillis();
         try {
-            Database.get().writeBackLocalCopyToDiskAndRemove(txId);
-            Database.get().swapMaster();
-            return true;
-        } catch (DatabaseException e) {
-            Logger.print().warning(e.getMessage(), "Tx: " + txId);
-            return true;
-        }finally {
-            RMStatistics.instance.getAverageCommitTime().addValue(System.currentTimeMillis() - start);
-            recordManager.setStatusCommit(txId);
+            if (!recordManager.hasRecord(txId)) return false;
+            Logger.print().info("COMMIT received from middleware", "Tx: " + txId);
+            long start = System.currentTimeMillis();
+            try {
+                Database.get().writeBackLocalCopyToDiskAndRemove(txId);
+                Database.get().swapMaster();
+                return true;
+            } catch (DatabaseException e) {
+                Logger.print().warning(e.getMessage(), "Tx: " + txId);
+                return true;
+            } finally {
+                Logger.print().info("Setting tx record to COMMITTED", "Tx: " + txId);
+                recordManager.setCommit(txId);
+                RMStatistics.instance.getAverageCommitTime().addValue(System.currentTimeMillis() - start);
+            }
+        } catch (TxRecordException e) {
+            //ignore request
+            return false;
         }
     }
 

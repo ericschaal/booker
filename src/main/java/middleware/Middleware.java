@@ -5,6 +5,7 @@ import common.io.Logger;
 import middleware.config.MiddlewareConfig;
 import middleware.io.MiddlewareIOManager;
 import middleware.rmi.RMIManager;
+import resourceManager.io.RMIOManager;
 
 import java.io.IOException;
 import java.rmi.AlreadyBoundException;
@@ -18,8 +19,9 @@ public class Middleware {
     public Middleware(MiddlewareConfig config) throws AlreadyBoundException, NotBoundException, IOException {
 
         try {
-            MiddlewareIOManager.init("./data");
+            MiddlewareIOManager.init("./data/");
             RMIManager.init(config);
+            RMIManager.txHealthCheck();
 
         } catch (RemoteException e) {
             Logger.print().error("Failed to connect to RMs");

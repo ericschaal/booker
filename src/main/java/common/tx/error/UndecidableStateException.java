@@ -1,4 +1,4 @@
-package resourceManager.tx;
+package common.tx.error;
 
 public class UndecidableStateException extends Exception {
     public UndecidableStateException() {

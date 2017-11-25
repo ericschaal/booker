@@ -7,7 +7,7 @@ import common.resource.Resource;
 import middleware.Middleware;
 import middleware.config.MiddlewareConfig;
 import performance.*;
-import resourceManager.EndpointRM;
+import resourceManager.RM;
 
 import java.io.IOException;
 import java.rmi.AlreadyBoundException;
@@ -67,7 +67,7 @@ public class Booker {
     }
 
     public static void startRM(NetworkAddress registry, Resource resource) throws AlreadyBoundException, IOException {
-        new EndpointRM(registry, resource);
+        new RM(registry, resource);
     }
 
     public static void startPerformanceAnalysis(NetworkAddress registry, PerformanceConfiguration config) throws RemoteException, NotBoundException {

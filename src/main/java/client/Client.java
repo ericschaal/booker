@@ -69,6 +69,8 @@ public class Client {
             command = command.trim();
             arguments = obj.parse(command);
 
+            if (arguments.isEmpty()) continue;
+
             //decide which of the commands this was
             switch (obj.findChoice((String) arguments.elementAt(0))) {
                 case 1: //help section
@@ -594,7 +596,7 @@ public class Client {
                         if (rm.abortTx(Id)) {
                             System.out.println("Abort successful");
                         } else {
-                            System.out.println("Failed to Abort.");
+                            System.out.println("Failed to Abort. A node is probably down this will result in an abort.");
                         }
                     } catch (Exception e) {
                         System.out.println("EXCEPTION:");

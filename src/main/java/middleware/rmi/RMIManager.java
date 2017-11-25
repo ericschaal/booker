@@ -20,6 +20,8 @@ public class RMIManager {
 
     private static RMIManager instance;
 
+    private MiddlewareResourceManager obj;
+
     private EndPointResourceManager flightRm;
     private EndPointResourceManager carRm;
     private EndPointResourceManager customerRm;
@@ -105,18 +107,16 @@ public class RMIManager {
         tryConnectTo(Resource.ROOM);
 
 
-
         if (this.carRm == null || this.flightRm == null || this.roomRm == null || this.customerRm == null) {
             throw new RemoteException("Failed to start");
         }
 
 
         Logger.print().info("Binding to Registry", "RMIManager");
-        MiddlewareResourceManager obj = new MiddlewareResourceManager();
+        obj = new MiddlewareResourceManager();
         TransactionalResourceManager rm = (TransactionalResourceManager) UnicastRemoteObject.exportObject(obj, 0);
 
         middlewareRegistry.rebind(RMI.MIDDLEWARE, rm);
-
 
 
         Logger.print().statement("Bind successful.", "RMIManager");
@@ -134,6 +134,7 @@ public class RMIManager {
                 }
             }
         }, 0, 3 * 1000);
+
     }
 
     public static void init(MiddlewareConfig config) throws RemoteException {
@@ -141,6 +142,30 @@ public class RMIManager {
             throw new RuntimeException("RMI Manager already initialized");
         } else {
             instance = new RMIManager(config);
+        }
+    }
+
+    public void healthCheck() {
+        obj.healthCheck();
+    }
+
+
+    public static void txHealthCheck() {
+        instance.healthCheck();
+    }
+
+    public static EndPointResourceManager getRmForResource(Resource r) {
+        switch (r) {
+            case CUSTOMER:
+                return customerRm();
+            case FLIGHT:
+                return flightRm();
+            case ROOM:
+                return roomRm();
+            case CAR:
+                return carRm();
+            default:
+                throw new IllegalArgumentException();
         }
     }
 
