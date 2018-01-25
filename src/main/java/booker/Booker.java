@@ -1,14 +1,15 @@
 package booker;
 
 import client.Client;
-import common.Logger;
-import common.NetworkAddress;
-import common.Resource;
+import common.io.Logger;
+import common.net.NetworkAddress;
+import common.resource.Resource;
 import middleware.Middleware;
-import middleware.MiddlewareConfig;
+import middleware.config.MiddlewareConfig;
 import performance.*;
-import resourceManager.EndpointRM;
+import resourceManager.RM;
 
+import java.io.IOException;
 import java.rmi.AlreadyBoundException;
 import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
@@ -61,12 +62,12 @@ public class Booker {
         new Client(registry).startConsole();
     }
 
-    public static void startMiddleware(MiddlewareConfig config) throws RemoteException, NotBoundException, AlreadyBoundException {
+    public static void startMiddleware(MiddlewareConfig config) throws NotBoundException, AlreadyBoundException, IOException {
         new Middleware(config);
     }
 
-    public static void startRM(NetworkAddress registry, Resource resource) throws AlreadyBoundException, RemoteException {
-        new EndpointRM(registry, resource);
+    public static void startRM(NetworkAddress registry, Resource resource) throws AlreadyBoundException, IOException {
+        new RM(registry, resource);
     }
 
     public static void startPerformanceAnalysis(NetworkAddress registry, PerformanceConfiguration config) throws RemoteException, NotBoundException {

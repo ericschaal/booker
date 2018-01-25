@@ -1,9 +1,9 @@
 package performance;
 
-import common.Logger;
-import common.NetworkAddress;
-import common.RMI;
-import common.TransactionalResourceManager;
+import common.io.Logger;
+import common.net.NetworkAddress;
+import common.resource.RMI;
+import common.resource.TransactionalResourceManager;
 import org.apache.commons.math3.stat.descriptive.DescriptiveStatistics;
 
 import java.rmi.NotBoundException;
@@ -77,7 +77,7 @@ public class PerformanceRunner {
     private void printLocalStats() {
         Logger.print().statement("-----------------------STATISTICS-----------------------");
         System.out.println("-----------------------");
-        System.out.println("Average Execution time per transaction number");
+        System.out.println("Average Execution time per tx number");
         for (int i = 0; i < TXCOUNT; i++) {
             Logger.print().statement("-----------------------");
             Logger.print().statement("", String.valueOf(i));

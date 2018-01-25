@@ -4,46 +4,48 @@
 //
 package resourceManager;
 
-import common.*;
 import common.hashtable.RMHashtable;
+import common.io.Trace;
 import common.resource.*;
+import resourceManager.perf.RMStatistics;
+import resourceManager.storage.Database;
+import resourceManager.tx.TxManager;
+
 import java.util.*;
 import java.rmi.RemoteException;
 
 
-public class ResourceManagerImpl implements RemoteRevertibleResourceManager {
+public class ResourceManagerImpl implements EndPointResourceManager {
 
     public ResourceManagerImpl() { }
 
-    private final TransactionHistory history = new TransactionHistory();
+
+    @Override
+    public boolean prepare(int txId) throws RemoteException {
+        return TxManager.getInstance().prepare(txId);
+    }
 
     public void newTransaction(int txId) throws RemoteException {
-        history.addToHistory(txId, Database.getActiveDb().cloneDb());
+        TxManager.getInstance().newTransaction(txId);
     }
 
     public boolean abortTransaction(int txId) throws RemoteException {
-        long start = System.currentTimeMillis();
-        boolean result = history.abortTransaction(txId);
-        RMStatistics.instance.getAverageAbortTime().addValue(System.currentTimeMillis() - start);
-        return result;
+        return TxManager.getInstance().abortTransaction(txId);
     }
 
     public boolean commitTransaction(int txId) throws RemoteException {
-        long start = System.currentTimeMillis();
-        boolean result = history.commitTransaction(txId);
-        RMStatistics.instance.getAverageCommitTime().addValue(System.currentTimeMillis() - start);
-        return result;
+        return TxManager.getInstance().commitTransaction(txId);
     }
 
 
     private void removeData(int id, String key) {
-        Database.getActiveDb().removeData(id, key);
+        Database.get().removeData(id, key);
     }
     private RMItem readData(int id, String key) {
-        return Database.getActiveDb().readData(id, key);
+        return Database.get().readData(id, key);
     }
     private void writeData(int id, String key, RMItem value) {
-        Database.getActiveDb().writeData(id, key, value);
+        Database.get().writeData(id, key, value);
     }
 
 
@@ -122,13 +124,13 @@ public class ResourceManagerImpl implements RemoteRevertibleResourceManager {
     // query the price of an item
     private int queryPrice(int id, String key) {
         long start = System.currentTimeMillis();
-        Trace.info("RM::queryCarsPrice(" + id + ", " + key + ") called");
+        Trace.info("RM::queryPrice(" + id + ", " + key + ") called");
         ReservableItem curObj = (ReservableItem) readData(id, key);
         int value = 0;
         if (curObj != null) {
             value = curObj.getPrice();
         } // else
-        Trace.info("RM::queryCarsPrice(" + id + ", " + key + ") returns cost=$" + value);
+        Trace.info("RM::queryPrice(" + id + ", " + key + ") returns cost=$" + value);
         RMStatistics.instance.getAverageExecutionTime().addValue(System.currentTimeMillis() - start);
         return value;
     }
@@ -481,4 +483,7 @@ public class ResourceManagerImpl implements RemoteRevertibleResourceManager {
             }
         }, 2000);
     }
+
+    @Override
+    public void verify() throws RemoteException { }
 }

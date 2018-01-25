@@ -1,9 +1,10 @@
 package client;
 
-import common.Logger;
-import common.NetworkAddress;
-import common.RMI;
-import common.TransactionalResourceManager;
+import client.rmi.RMIManager;
+import common.io.Logger;
+import common.net.NetworkAddress;
+import common.resource.RMI;
+import common.resource.TransactionalResourceManager;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -37,17 +38,18 @@ public class Client {
     String location;
 
     public Client(NetworkAddress registryAddress) throws RemoteException, NotBoundException {
-        Registry registry = LocateRegistry.getRegistry(registryAddress.getIp(), registryAddress.getPort());
-        TransactionalResourceManager resourceManager = (TransactionalResourceManager) registry.lookup(RMI.MIDDLEWARE);
 
-        if (resourceManager != null) {
-            this.rm = new ResourceManager(resourceManager);
-            this.obj = new ClientConsole();
-
-            Logger.print().statement("Client ready");
-        } else {
-            Logger.print().error("Client failed to connect to Middleware.");
+        try {
+            RMIManager.init(registryAddress);
+        } catch (RemoteException e) {
+            Logger.print().error("Failed to connect to middleware.");
+            System.exit(1);
         }
+
+        this.rm = new ResourceManager();
+        this.obj = new ClientConsole();
+
+        Logger.print().statement("Client ready");
 
     }
 
@@ -66,6 +68,8 @@ public class Client {
             //remove heading and trailing white space
             command = command.trim();
             arguments = obj.parse(command);
+
+            if (arguments.isEmpty()) continue;
 
             //decide which of the commands this was
             switch (obj.findChoice((String) arguments.elementAt(0))) {
@@ -163,6 +167,10 @@ public class Client {
                     try {
                         Id = obj.getInt(arguments.elementAt(1));
                         int customer = rm.newCustomer(Id);
+                        if (customer == 0) {
+                            System.out.println("Failed to create customer");
+                            break;
+                        }
                         System.out.println("new customer id:" + customer);
                     } catch (Exception e) {
                         System.out.println("EXCEPTION:");
@@ -267,6 +275,10 @@ public class Client {
                         Id = obj.getInt(arguments.elementAt(1));
                         flightNum = obj.getInt(arguments.elementAt(2));
                         int seats = rm.queryFlight(Id, flightNum);
+                        if (seats == 0) {
+                            System.out.println("Flight doesn't exist");
+                            break;
+                        }
                         System.out.println("Number of seats available:" + seats);
                     } catch (Exception e) {
                         System.out.println("EXCEPTION:");
@@ -286,6 +298,10 @@ public class Client {
                         Id = obj.getInt(arguments.elementAt(1));
                         location = obj.getString(arguments.elementAt(2));
                         numCars = rm.queryCars(Id, location);
+                        if (numCars == 0) {
+                            System.out.println("Car location doesn't exist");
+                            break;
+                        }
                         System.out.println("number of Cars at this location:" + numCars);
                     } catch (Exception e) {
                         System.out.println("EXCEPTION:");
@@ -305,6 +321,10 @@ public class Client {
                         Id = obj.getInt(arguments.elementAt(1));
                         location = obj.getString(arguments.elementAt(2));
                         numRooms = rm.queryRooms(Id, location);
+                        if (numRooms == 0) {
+                            System.out.println("Room location doesn't exist");
+                            break;
+                        }
                         System.out.println("number of Rooms at this location:" + numRooms);
                     } catch (Exception e) {
                         System.out.println("EXCEPTION:");
@@ -324,6 +344,10 @@ public class Client {
                         Id = obj.getInt(arguments.elementAt(1));
                         int customer = obj.getInt(arguments.elementAt(2));
                         String bill = rm.queryCustomerInfo(Id, customer);
+                        if (bill.isEmpty()) {
+                            System.out.println("Customer doesn't exist");
+                            break;
+                        }
                         System.out.println("Customer info:" + bill);
                     } catch (Exception e) {
                         System.out.println("EXCEPTION:");
@@ -343,6 +367,10 @@ public class Client {
                         Id = obj.getInt(arguments.elementAt(1));
                         flightNum = obj.getInt(arguments.elementAt(2));
                         price = rm.queryFlightPrice(Id, flightNum);
+                        if (price == 0) {
+                            System.out.println("Flight doesn't exist");
+                            break;
+                        }
                         System.out.println("Price of a seat:" + price);
                     } catch (Exception e) {
                         System.out.println("EXCEPTION:");
@@ -362,6 +390,10 @@ public class Client {
                         Id = obj.getInt(arguments.elementAt(1));
                         location = obj.getString(arguments.elementAt(2));
                         price = rm.queryCarsPrice(Id, location);
+                        if (price == 0) {
+                            System.out.println("Car doesn't exist");
+                            break;
+                        }
                         System.out.println("Price of a car at this location:" + price);
                     } catch (Exception e) {
                         System.out.println("EXCEPTION:");
@@ -381,6 +413,10 @@ public class Client {
                         Id = obj.getInt(arguments.elementAt(1));
                         location = obj.getString(arguments.elementAt(2));
                         price = rm.queryRoomsPrice(Id, location);
+                        if (price == 0) {
+                            System.out.println("Room doesn't exist");
+                            break;
+                        }
                         System.out.println("Price of Rooms at this location:" + price);
                     } catch (Exception e) {
                         System.out.println("EXCEPTION:");
@@ -508,27 +544,17 @@ public class Client {
                         obj.wrongNumber();
                         break;
                     }
-                    System.out.println("Adding a new Customer using id:" + arguments.elementAt(1) + " and cid " + arguments.elementAt(2));
-                    try {
-                        Id = obj.getInt(arguments.elementAt(1));
-                        Cid = obj.getInt(arguments.elementAt(2));
-                        boolean customer = rm.newCustomer(Id, Cid);
-                        System.out.println("new customer id:" + Cid);
-                    } catch (Exception e) {
-                        System.out.println("EXCEPTION:");
-                        System.out.println(e.getMessage());
-                        e.printStackTrace();
-                    }
+                    System.out.println("Not implemented.");
                     break;
 
 
-                case 23: // start a new transaction
+                case 23: // start a new tx
                     if (arguments.size() != 1) {
                         obj.wrongNumber();
                         break;
                     }
                     try {
-                        System.out.println("Starting a new transaction.");
+                        System.out.println("Starting a new tx.");
                         System.out.println("TxId: " + rm.startTx());
                     } catch (Exception e) {
                         System.out.println("EXCEPTION:");
@@ -538,14 +564,14 @@ public class Client {
                     break;
 
 
-                case 24: // commits transaction
+                case 24: // commits tx
                     if (arguments.size() != 2) {
                         obj.wrongNumber();
                         break;
                     }
                     try {
                         Id = obj.getInt(arguments.elementAt(1));
-                        System.out.println("Committing transaction with id: " + Id + ".");
+                        System.out.println("Committing tx with id: " + Id + ".");
                         if (rm.commitTx(Id)) {
                             System.out.println("Commit successful");
                         } else {
@@ -559,18 +585,18 @@ public class Client {
                     break;
 
 
-                case 25: // aborts transaction
+                case 25: // aborts tx
                     if (arguments.size() != 2) {
                         obj.wrongNumber();
                         break;
                     }
                     try {
                         Id = obj.getInt(arguments.elementAt(1));
-                        System.out.println("Aborting transaction with id: " + Id + ".");
+                        System.out.println("Aborting tx with id: " + Id + ".");
                         if (rm.abortTx(Id)) {
                             System.out.println("Abort successful");
                         } else {
-                            System.out.println("Failed to Abort.");
+                            System.out.println("Failed to Abort. A node is probably down this will result in an abort.");
                         }
                     } catch (Exception e) {
                         System.out.println("EXCEPTION:");
@@ -585,6 +611,7 @@ public class Client {
                         Timer shutdownCountDown = new Timer();
                         shutdownCountDown.scheduleAtFixedRate(new TimerTask() {
                             int count = 4;
+
                             @Override
                             public void run() {
                                 System.out.println("Shutting down " + count--);

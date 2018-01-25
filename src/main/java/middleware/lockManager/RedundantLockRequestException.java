@@ -1,7 +1,7 @@
 package middleware.lockManager;
 
 /*
-	The transaction requested a lock that it already had.
+	The tx requested a lock that it already had.
 */
 
 public class RedundantLockRequestException extends Exception
